@@ -1,12 +1,12 @@
 # 教材目录
 
-> **进度**：第 1 章已有正文初稿、参考文献、离线实验和单元测试；第 2–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–2 章已有正文初稿、参考文献、离线实验和单元测试；第 3–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
 
 - [第 1 章：从大语言模型到智能 Agent](chapters/01.md) · ✅ 正文初稿、代码实验已提交
-- [第 2 章：LLM 如何驱动 Agent](chapters/02.md)
+- [第 2 章：LLM 如何驱动 Agent](chapters/02.md) · ✅ 正文初稿、代码实验已提交
 - [第 3 章：Agent 的数学模型与决策原理](chapters/03.md)
 - [第 4 章：从零实现第一个 Agent](chapters/04.md)
 
@@ -61,3 +61,4 @@
 ## 可运行实验
 
 - 第 1 章：[Workflow 与反馈驱动的 Policy Loop](../examples/ch01_workflow_vs_agent.py)，配套 [单元测试](../tests/test_ch01.py)
+- 第 2 章：[模型协议与参数验证](../examples/ch02_model_protocol.py)，配套 [单元测试](../tests/test_ch02.py)
