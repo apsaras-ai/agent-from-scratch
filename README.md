@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–4 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 5–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–5 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 6–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -41,6 +41,7 @@ python -m pip install -e .
 python examples/offline_demo.py
 python examples/ch01_workflow_vs_agent.py
 python examples/ch04_agent_loop.py
+python examples/ch05_run_lifecycle.py
 python -m unittest discover -s tests -v
 ```
 
@@ -75,6 +76,8 @@ export AGENT_MODEL="your-supported-model"
 # optional: export AGENT_BASE_URL="https://your-compatible-endpoint/v1"
 python examples/ch04_live_agent.py
 ```
+
+第 5 章新增 Task / Run / Step / Event 内存领域模型、合法状态转换、纯事件重放和并发版本检查。运行 `python examples/ch05_run_lifecycle.py` 即可观察状态投影、审批状态和陈旧写入被拒绝。**这个 Event Store 仅在当前进程内有效，不支持重启恢复。**
 
 代码尚未实现 Sandbox、Durable Execution、真实墙钟超时或独立结果验证，**不应作为生产环境的通用 Agent 执行不可信指令**。
 

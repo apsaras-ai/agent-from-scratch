@@ -50,3 +50,28 @@ flowchart TD
 - 没有沙箱、持久化恢复、上下文压缩、工具进程中断或可靠重试机制。
 
 这些能力在后续第 5–12 章和第 18–28 章迭代实现。
+
+## 第 5 章：控制平面领域模型（内存演示）
+
+- [领域模型](../src/mini_agent/run_domain.py)：`TaskSpec` / `RunState` / `StepState` / `RunEvent`、合法状态转移、事件历史投影。
+- [第 4 章桥接器](../src/mini_agent/run_capture.py)：将已经结束的 `AgentKernel` 执行消息**事后转换**为领域事件，不提供崩溃恢复。
+- [实验](../examples/ch05_run_lifecycle.py)：演示 `RUNNING → WAITING_APPROVAL → RUNNING`、重放和过时版本拒绝。
+- [测试](../tests/test_ch05.py)：生命周期守卫、原子内存追加、版本冲突、事件身份和防御性复制。
+
+### 关键模型
+
+- **Task** 是需求目标；**Run** 是一次执行尝试；**Step** 是模型/工具活动；**Event** 是已经发生的领域状态变化。
+- `replay(events)` 只计算状态，不允许调用模型或执行工具。
+- `InMemoryEventStore` 只在同一个 Python 进程内、通过锁与版本号进行原子条件追加。它**没有磁盘持久化、跨机器事务或 Worker 租约**。
+- `emit(...)` 是单写者便利函数，读取版本与追加事件不是不可分割的一次操作；多写者应直接使用带 `expected_version` 的 `append`。
+- 事件身份去重不能保证外部工具 **exactly-once**；恢复和副作用幂等留待后续章节。
+
+### 三种流
+
+```text
+Control flow : coordinator, permissions, scheduling
+Data flow    : messages, context, tool I/O, artifacts
+Event flow   : run.created, step.finished, run.paused ...
+```
+
+领域事件不是 OpenTelemetry Trace Span，二者未来可通过 `run_id` / `step_id` / `trace_id` 关联。
