@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：筹备 / 章节大纲阶段。** 当前仓库包含全书 34 章的写作骨架、第一阶段可运行示例与测试；未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1 章已完成正文初稿及离线实验，仍待技术审稿；第 2–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,9 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [完整 34 章目录与阅读导航](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+
+第 1 章新增可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
 ## 快速运行：一个不依赖 API Key 的 Agent Loop
 
@@ -37,10 +39,11 @@ git clone https://github.com/apsaras-ai/agent-from-scratch.git
 cd agent-from-scratch
 python -m pip install -e .
 python examples/offline_demo.py
+python examples/ch01_workflow_vs_agent.py
 python -m unittest discover -s tests -v
 ```
 
-期望看到：
+原有最小示例应输出：
 
 ```text
 Agent: 2 + 3 = 5
