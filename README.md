@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–3 章已完成正文初稿及离线实验，仍待技术审稿；第 4–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–4 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 5–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -40,6 +40,7 @@ cd agent-from-scratch
 python -m pip install -e .
 python examples/offline_demo.py
 python examples/ch01_workflow_vs_agent.py
+python examples/ch04_agent_loop.py
 python -m unittest discover -s tests -v
 ```
 
@@ -64,6 +65,19 @@ python examples/live_tool_call.py
 
 第 3 章新增离线数学实验：`python examples/ch03_decision_process.py`（有限 MDP Value Iteration、POMDP Belief Update、Value of Information）。
 
+第 4 章实现新教学内核 `mini_agent.agent_v2`：消息协议、同轮多个工具调用、工具参数验证、错误观察、预算与最小可替换模型适配器。运行 `python examples/ch04_agent_loop.py` 无须 API Key。
+
+第 4 章真实模型演示（**可选**，需自行提供支持 Chat Completions Tool Calling 的账号和模型）：
+
+```bash
+export AGENT_API_KEY="your-api-key"
+export AGENT_MODEL="your-supported-model"
+# optional: export AGENT_BASE_URL="https://your-compatible-endpoint/v1"
+python examples/ch04_live_agent.py
+```
+
+代码尚未实现 Sandbox、Durable Execution、真实墙钟超时或独立结果验证，**不应作为生产环境的通用 Agent 执行不可信指令**。
+
 ## 项目结构
 
 ```text
@@ -77,8 +91,8 @@ tests/                # 标准库 unittest
 
 ## 分阶段实现
 
-- **v0.1（当前）**：最小 Agent Loop、工具注册、离线示例、基础测试。
-- **v0.2（规划）**：模型网关、工具协议、结构化消息与事件。
+- **v0.1（已实现）**：最小 Agent Loop、工具注册、离线示例、基础测试。
+- **v0.2（教学原型已开始）**：第 4 章提供结构化消息、错误事件、预算与最小 Chat Completions 适配器；完整模型网关、流式处理与复杂协议留到第 6、7 章。
 - **v0.3（规划）**：Context、Memory、Planning、Workflow、Checkpoint。
 - **v0.4（规划）**：Research、Coding、Browser 和 Multi-Agent。
 - **v0.5（规划）**：Sandbox、安全、并发、分布式执行、Tracing。
