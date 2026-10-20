@@ -9,7 +9,7 @@ from mini_agent.run_capture import capture_kernel_run
 from mini_agent.run_domain import (
     EventType, InMemoryEventStore, RunEvent, TaskSpec, VersionConflict, emit, replay,
 )
-from examples.ch04_agent_loop import RuleBasedDemoModel
+from mini_agent.demo_model import RuleBasedDemoModel
 
 
 def main() -> None:

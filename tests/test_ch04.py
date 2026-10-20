@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from examples.ch04_agent_loop import RuleBasedDemoModel
+from mini_agent.demo_model import RuleBasedDemoModel
 from mini_agent.agent_v2 import (
     AgentKernel, ModelReply, Tool, ToolCall, ToolRegistry, validate_arguments,
 )

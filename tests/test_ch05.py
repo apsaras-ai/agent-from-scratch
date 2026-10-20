@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import FrozenInstanceError
 from unittest import TestCase
 
-from examples.ch04_agent_loop import RuleBasedDemoModel
+from mini_agent.demo_model import RuleBasedDemoModel
 from mini_agent.agent_v2 import AgentKernel
 from mini_agent.demo_tools import arithmetic_tools
 from mini_agent.run_capture import capture_kernel_run

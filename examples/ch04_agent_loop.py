@@ -6,40 +6,12 @@ use examples/ch04_live_agent.py with your own credentials.
 """
 from __future__ import annotations
 
-import json
-from typing import Any
-
-from mini_agent.agent_v2 import AgentKernel, ModelReply, ToolCall
+from mini_agent.agent_v2 import AgentKernel
 from mini_agent.demo_tools import arithmetic_tools
+from mini_agent.demo_model import RuleBasedDemoModel
 
 
-class RuleBasedDemoModel:
-    def complete(
-        self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
-    ) -> ModelReply:
-        results = [msg for msg in messages if msg["role"] == "tool"]
-        if not results:
-            return ModelReply(
-                tool_calls=(ToolCall("call_add", "add", '{"a":8,"b":13}'),),
-                finish_reason="tool_calls",
-            )
-        last_result = json.loads(results[-1]["content"])
-        if not last_result.get("ok"):
-            return ModelReply(content=f"Tool failed: {last_result['error']}")
-        if len(results) == 1:
-            return ModelReply(
-                tool_calls=(
-                    ToolCall(
-                        "call_multiply", "multiply",
-                        json.dumps({"a": last_result["result"], "b": 2}),
-                    ),
-                ),
-                finish_reason="tool_calls",
-            )
-        return ModelReply(content=f"Answer: {last_result['result']}")
-
-
-def main() -> None:
+classdef main() -> None:
     agent = AgentKernel(RuleBasedDemoModel(), arithmetic_tools())
     result = agent.run("Calculate (8 + 13) * 2 using tools.")
     print("Status:", result.status)
