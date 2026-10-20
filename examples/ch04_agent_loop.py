@@ -11,7 +11,7 @@ from mini_agent.demo_tools import arithmetic_tools
 from mini_agent.demo_model import RuleBasedDemoModel
 
 
-classdef main() -> None:
+def main() -> None:
     agent = AgentKernel(RuleBasedDemoModel(), arithmetic_tools())
     result = agent.run("Calculate (8 + 13) * 2 using tools.")
     print("Status:", result.status)
