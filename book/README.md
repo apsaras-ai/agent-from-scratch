@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–8 章已有正文初稿、参考文献、离线实验和单元测试；第 9–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–9 章已有正文初稿、参考文献、离线实验和单元测试；第 10–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -16,7 +16,7 @@
 - [第 6 章：Model Gateway 与模型适配](chapters/06.md) · ✅ 正文初稿、双 Provider Gateway 和 Streaming 实验
 - [第 7 章：Tool Use 与工具系统](chapters/07.md) · ✅ 正文初稿、Async Tool Runtime 和 MCP 适配实验
 - [第 8 章：Context Engineering](chapters/08.md) · ✅ 正文初稿、Context Manager、长度/证据保留实验
-- [第 9 章：Memory 与知识检索](chapters/09.md)
+- [第 9 章：Memory 与知识检索](chapters/09.md) · ✅ 正文初稿、Memory Service 实验
 - [第 10 章：Reasoning、Planning 与 Verification](chapters/10.md)
 - [第 11 章：Workflow 与 Agent Orchestration](chapters/11.md)
 - [第 12 章：State Persistence 与 Durable Execution](chapters/12.md)
@@ -72,3 +72,5 @@
 - 第 7 章：[异步工具与 Mock MCP 实验](../examples/ch07_tool_runtime.py) · [可选 MCP SDK v2 Client](../examples/ch07_mcp_client_v2.py) · [单元测试](../tests/test_ch07.py)
 
 - 第 8 章：[上下文筛选与归档实验](../examples/ch08_context_lab.py) · [Context Manager 源码](../src/mini_agent/context_engineering.py) · [单元测试](../tests/test_ch08.py)
+
+- 第 9 章：[Memory 检索实验](../examples/ch09_memory_lab.py) · [源码](../src/mini_agent/memory_service.py) · [测试](../tests/test_ch09.py)

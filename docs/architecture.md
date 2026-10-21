@@ -130,3 +130,7 @@ Event flow   : run.created, step.finished, run.paused ...
 - `HeuristicTokenCounter` 是可复现的长度代理，**绝非实际 Tokenizer、硬容量保证或账单**。
 - `compact` 生成的是可检索归档标记，而**不是未经验证的语义事实摘要**。
 - 为模型筛选上下文，不提供 Prompt Injection 免疫、真实 Memory、跨进程持久化或已实现的检索授权。
+
+## 第 9 章：Memory Service（教学版）
+
+带来源、版本、过期、租户/所有者作用域的 Memory Store；词项覆盖率、字符哈希向量、RRF 混合检索。身份过滤先于排序。无持久化、真实 Embedding、认证和物理硬删除。
