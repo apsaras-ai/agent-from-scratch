@@ -113,3 +113,20 @@ Event flow   : run.created, step.finished, run.paused ...
 - 重复调用 ID 只在当前进程的内存表去重；并非 Durable Execution、Exactly-once 或全局权限系统。
 - Remote MCP Transport、认证、进程启动与连接生命周期交由官方 SDK 管理。本章默认 CI 完全离线。
 - 生产环境的沙箱、资源隔离、持久化、授权审计以及工具调用幂等性仍需后续章节完成。
+
+## 第 8 章：Context Engineering（教学版）
+
+- [Context Manager](../src/mini_agent/context_engineering.py)：`ContextBudget`、`ContextUnit`、`HeuristicTokenCounter`、`ContextManager`、`ContextManagedModel` 和内存归档。
+- [离线实验](../examples/ch08_context_lab.py)：比较最近历史与可信重要证据优先策略，另演示含归档引用的 Compaction。
+- [测试](../tests/test_ch08.py)：Pinned 内容预算、工具消息原子性、重复/孤立 Tool Call ID、历史不变性、归档恢复、Model Wrapper 集成与超限停止。
+
+### 关键不变量
+
+- 完整历史由 AgentKernel / Run Store 管理；Model View 只是给当前模型的一次输入快照。
+- System、初始用户目标和最近一次 User Message 都不能无声删除。
+- Assistant Tool Calls 与全部匹配的 Tool Results 是不可拆分的单位；不完整 History 必须拒绝。
+- 可信应用才可设置 Importance，不能读取不可信 Tool Output 的“优先级”主张。
+- 工具结果超长可裁剪并保留原文 Archive ID，但 Archive **当前仅在进程内有效**。
+- `HeuristicTokenCounter` 是可复现的长度代理，**绝非实际 Tokenizer、硬容量保证或账单**。
+- `compact` 生成的是可检索归档标记，而**不是未经验证的语义事实摘要**。
+- 为模型筛选上下文，不提供 Prompt Injection 免疫、真实 Memory、跨进程持久化或已实现的检索授权。
