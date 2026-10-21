@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–6 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 7–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–7 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 8–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -43,6 +43,7 @@ python examples/ch01_workflow_vs_agent.py
 python examples/ch04_agent_loop.py
 python examples/ch05_run_lifecycle.py
 python examples/ch06_gateway_demo.py
+python examples/ch07_tool_runtime.py
 python -m unittest discover -s tests -v
 ```
 
@@ -83,6 +84,8 @@ python examples/ch04_live_agent.py
 第 6 章实现同步 Model Gateway（原生 OpenAI Chat Completions、Anthropic Messages）、SSE 消息组装、Usage 统一、Retry/Fallback 和静态模型路由。运行 `python examples/ch06_gateway_demo.py` 可离线验证；[可选真实模型演示](examples/ch06_live_gateway.py) 需自行提供模型凭证。
 
 代码尚未实现 Sandbox、Durable Execution、真实墙钟超时或独立结果验证，**不应作为生产环境的通用 Agent 执行不可信指令**。
+
+第 7 章实现 [AsyncToolRuntime](src/mini_agent/tool_runtime.py)：JSON Schema Draft 2020-12、按任务权限过滤、调用级审批、异步并发、错误反馈和输出校验。MCP SDK v2 适配见 [mcp_tools.py](src/mini_agent/mcp_tools.py)，可选本地 Client 示例在 [ch07_mcp_client_v2.py](examples/ch07_mcp_client_v2.py)。运行 `python examples/ch07_tool_runtime.py` 无需凭证；默认工具不具有 Sandbox 隔离。
 
 ## 项目结构
 

@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–6 章已有正文初稿、参考文献、离线实验和单元测试；第 7–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–7 章已有正文初稿、参考文献、离线实验和单元测试；第 8–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -14,7 +14,7 @@
 
 - [第 5 章：Agent 的软件架构设计](chapters/05.md) · ✅ 正文初稿、Run 状态机及 Event Store 实验
 - [第 6 章：Model Gateway 与模型适配](chapters/06.md) · ✅ 正文初稿、双 Provider Gateway 和 Streaming 实验
-- [第 7 章：Tool Use 与工具系统](chapters/07.md)
+- [第 7 章：Tool Use 与工具系统](chapters/07.md) · ✅ 正文初稿、Async Tool Runtime 和 MCP 适配实验
 - [第 8 章：Context Engineering](chapters/08.md)
 - [第 9 章：Memory 与知识检索](chapters/09.md)
 - [第 10 章：Reasoning、Planning 与 Verification](chapters/10.md)
@@ -68,3 +68,5 @@
 - 第 5 章：[Task/Run/Step/Event 生命周期实验](../examples/ch05_run_lifecycle.py) · [纯领域模型](../src/mini_agent/run_domain.py) · [单元测试](../tests/test_ch05.py)
 
 - 第 6 章：[双协议和流式网关实验](../examples/ch06_gateway_demo.py) · [可选真实模型示例](../examples/ch06_live_gateway.py) · [单元测试](../tests/test_ch06.py)
+
+- 第 7 章：[异步工具与 Mock MCP 实验](../examples/ch07_tool_runtime.py) · [可选 MCP SDK v2 Client](../examples/ch07_mcp_client_v2.py) · [单元测试](../tests/test_ch07.py)

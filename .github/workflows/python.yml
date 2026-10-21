@@ -21,3 +21,4 @@ jobs:
       - run: python examples/ch04_agent_loop.py
       - run: python examples/ch05_run_lifecycle.py
       - run: python examples/ch06_gateway_demo.py
+      - run: python examples/ch07_tool_runtime.py

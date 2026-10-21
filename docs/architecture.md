@@ -95,3 +95,21 @@ Event flow   : run.created, step.finished, run.paused ...
 ### 操作约束
 
 只使用可信配置的 Endpoint；本章禁止自动 HTTP Redirect，但不构成完整出站网络安全控制。发生协议错误、持久性错误或流式中断时，不把响应伪装成成功、不自动绕过权限 Fallback。所有真实模型调用应另行配置凭证、审计和预算。
+
+## 第 7 章：Schema-aware Async Tool Runtime（教学版）
+
+- [工具系统](../src/mini_agent/tool_runtime.py)：`ToolCatalog`、`ToolPolicy`、`AsyncToolRuntime`、输入与输出 JSON Schema Draft 2020-12 校验、调用预算、异常归一化、并发 Semaphore 和写操作 Lock。
+- [MCP Tool Adapter](../src/mini_agent/mcp_tools.py)：使用用户提供的、已连接的 MCP Python SDK v2 `Client`；分页发现、工具名称加 Server Alias，仅注册本地白名单中的 MCP Tools。
+- [Async Agent Bridge](../src/mini_agent/async_agent.py)：复用此前同步 `Model.complete` 协议，允许异步执行工具并回填 Tool Results。
+- [离线实验](../examples/ch07_tool_runtime.py)：演示连续模型工具调用、本地读写审批和 Fake MCP。
+- [可选本地 MCP Client](../examples/ch07_mcp_client_v2.py)：安装项目 extras `.[mcp]`，只对 Loopback 服务做白名单 Tool Discovery。
+- [单元测试](../tests/test_ch07.py)：复杂 JSON Schema、重复键、权限拒绝、工具超时、并发、MCP Output Schema 和模型桥接。
+
+### 风险边界（重点）
+
+- JSON Schema 不授权环境副作用；MCP `annotations.readOnlyHint` 是远程宣称，不作为本地权限事实。
+- 本章风险与审批仅是由**可信服务端创建**的 `ToolPolicy` 教学对象，不能让 LLM 或不可信客户端自主颁发。
+- `asyncio.wait_for` 取消是协作式的，不能确保外部 API 事务或阻塞操作已停止；返回超时意味着**结果未知**。
+- 重复调用 ID 只在当前进程的内存表去重；并非 Durable Execution、Exactly-once 或全局权限系统。
+- Remote MCP Transport、认证、进程启动与连接生命周期交由官方 SDK 管理。本章默认 CI 完全离线。
+- 生产环境的沙箱、资源隔离、持久化、授权审计以及工具调用幂等性仍需后续章节完成。
