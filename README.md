@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–5 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 6–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–6 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 7–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -42,6 +42,7 @@ python examples/offline_demo.py
 python examples/ch01_workflow_vs_agent.py
 python examples/ch04_agent_loop.py
 python examples/ch05_run_lifecycle.py
+python examples/ch06_gateway_demo.py
 python -m unittest discover -s tests -v
 ```
 
@@ -79,6 +80,8 @@ python examples/ch04_live_agent.py
 
 第 5 章新增 Task / Run / Step / Event 内存领域模型、合法状态转换、纯事件重放和并发版本检查。运行 `python examples/ch05_run_lifecycle.py` 即可观察状态投影、审批状态和陈旧写入被拒绝。**这个 Event Store 仅在当前进程内有效，不支持重启恢复。**
 
+第 6 章实现同步 Model Gateway（原生 OpenAI Chat Completions、Anthropic Messages）、SSE 消息组装、Usage 统一、Retry/Fallback 和静态模型路由。运行 `python examples/ch06_gateway_demo.py` 可离线验证；[可选真实模型演示](examples/ch06_live_gateway.py) 需自行提供模型凭证。
+
 代码尚未实现 Sandbox、Durable Execution、真实墙钟超时或独立结果验证，**不应作为生产环境的通用 Agent 执行不可信指令**。
 
 ## 项目结构
@@ -95,7 +98,7 @@ tests/                # 标准库 unittest
 ## 分阶段实现
 
 - **v0.1（已实现）**：最小 Agent Loop、工具注册、离线示例、基础测试。
-- **v0.2（教学原型已开始）**：第 4 章提供结构化消息、错误事件、预算与最小 Chat Completions 适配器；完整模型网关、流式处理与复杂协议留到第 6、7 章。
+- **v0.2（教学原型持续迭代）**：第 4 章完成结构化消息、工具调用和预算；第 6 章增加原生 Chat Completions / Anthropic Messages 适配、SSE 流式组装和静态路由。复杂工具协议留到第 7 章。
 - **v0.3（规划）**：Context、Memory、Planning、Workflow、Checkpoint。
 - **v0.4（规划）**：Research、Coding、Browser 和 Multi-Agent。
 - **v0.5（规划）**：Sandbox、安全、并发、分布式执行、Tracing。
