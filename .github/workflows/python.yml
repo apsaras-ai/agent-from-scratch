@@ -24,3 +24,4 @@ jobs:
       - run: python examples/ch07_tool_runtime.py
       - run: python examples/ch08_context_lab.py
       - run: python examples/ch09_memory_lab.py
+      - run: python examples/ch10_planning_lab.py
