@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–11 章已有正文初稿、参考文献、离线实验和单元测试；第 12–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–12 章已有正文初稿、参考文献、离线实验和单元测试；第 13–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -19,7 +19,7 @@
 - [第 9 章：Memory 与知识检索](chapters/09.md) · ✅ 正文初稿、Memory Service 实验
 - [第 10 章：Reasoning、Planning 与 Verification](chapters/10.md) · ✅ 正文初稿、DAG Planning / Replan / Verifier
 - [第 11 章：Workflow 与 Agent Orchestration](chapters/11.md) · ✅ 正文初稿、DAG / Approval / Parallel 实验
-- [第 12 章：State Persistence 与 Durable Execution](chapters/12.md)
+- [第 12 章：State Persistence 与 Durable Execution](chapters/12.md) · ✅ 正文初稿、SQLite 恢复实验
 
 ## 第三篇：构建真实场景的智能 Agent
 
@@ -78,3 +78,5 @@
 - 第 10 章：[离线重规划实验](../examples/ch10_planning_lab.py) · [源码](../src/mini_agent/planning.py) · [单元测试](../tests/test_ch10.py)
 
 - 第 11 章：[Workflow 实验](../examples/ch11_workflow_lab.py) · [源码](../src/mini_agent/workflow.py) · [测试](../tests/test_ch11.py)
+
+- 第 12 章：[SQLite 恢复实验](../examples/ch12_durable_lab.py) · [源码](../src/mini_agent/durable_execution.py) · [测试](../tests/test_ch12.py)

@@ -26,3 +26,4 @@ jobs:
       - run: python examples/ch09_memory_lab.py
       - run: python examples/ch10_planning_lab.py
       - run: python examples/ch11_workflow_lab.py
+      - run: python examples/ch12_durable_lab.py
