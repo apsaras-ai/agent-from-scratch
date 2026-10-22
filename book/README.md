@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–14 章已有正文初稿、参考文献、离线实验和单元测试；第 15–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–15 章已有正文初稿、参考文献、离线实验和单元测试；第 16–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -25,7 +25,7 @@
 
 - [第 13 章：Research Agent](chapters/13.md) · ✅ 正文初稿、证据来源与引用实验
 - [第 14 章：Coding Agent 的代码仓库理解能力](chapters/14.md) · ✅ 正文初稿、Python AST Repository Map 实验
-- [第 15 章：构建自主 Coding Agent](chapters/15.md)
+- [第 15 章：构建自主 Coding Agent](chapters/15.md) · ✅ 正文初稿、真实文件修复闭环、回滚与独立验收
 - [第 16 章：Browser Agent 与 Computer Use](chapters/16.md)
 - [第 17 章：Multi-Agent Systems](chapters/17.md)
 
@@ -84,3 +84,5 @@
 - 第 13 章：[离线研究实验](../examples/ch13_research_lab.py) · [源码](../src/mini_agent/research_agent.py) · [测试](../tests/test_ch13.py)
 
 - 第 14 章：[仓库索引实验](../examples/ch14_repository_map.py) · [源码](../src/mini_agent/repository_index.py) · [测试](../tests/test_ch14.py)
+
+- 第 15 章：[代码修复闭环](../examples/ch15_coding_lab.py) · [控制器](../src/mini_agent/coding_agent.py) · [可信 Fixture](../src/mini_agent/coding_fixture.py) · [24 项测试](../tests/test_ch15.py)

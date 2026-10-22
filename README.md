@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–14 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 15–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–15 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 16–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -48,6 +48,7 @@ python examples/ch08_context_lab.py
 python examples/ch09_memory_lab.py
 python examples/ch10_planning_lab.py
 python examples/ch11_workflow_lab.py
+python examples/ch15_coding_lab.py
 python -m unittest discover -s tests -v
 ```
 
@@ -87,11 +88,25 @@ python examples/ch04_live_agent.py
 
 第 6 章实现同步 Model Gateway（原生 OpenAI Chat Completions、Anthropic Messages）、SSE 消息组装、Usage 统一、Retry/Fallback 和静态模型路由。运行 `python examples/ch06_gateway_demo.py` 可离线验证；[可选真实模型演示](examples/ch06_live_gateway.py) 需自行提供模型凭证。
 
-代码尚未实现 Sandbox、Durable Execution、真实墙钟超时或独立结果验证，**不应作为生产环境的通用 Agent 执行不可信指令**。
+代码仅提供分章节的教学持久化、超时和结果验证示例，尚未实现生产级 Sandbox 与分布式 Durable Runtime，**不应作为生产环境的通用 Agent 执行不可信指令**。
 
 第 7 章实现 [AsyncToolRuntime](src/mini_agent/tool_runtime.py)：JSON Schema Draft 2020-12、按任务权限过滤、调用级审批、异步并发、错误反馈和输出校验。MCP SDK v2 适配见 [mcp_tools.py](src/mini_agent/mcp_tools.py)，可选本地 Client 示例在 [ch07_mcp_client_v2.py](examples/ch07_mcp_client_v2.py)。运行 `python examples/ch07_tool_runtime.py` 无需凭证；默认工具不具有 Sandbox 隔离。
 
 第 8 章新增 [Context Manager](src/mini_agent/context_engineering.py)：预算估算、保留完整 Tool Exchange、可信证据优先、工具结果裁剪和内存归档。配套 [离线实验](examples/ch08_context_lab.py) 和 [测试](tests/test_ch08.py) 不使用真实模型，也不把 Proxy Token 计数当作服务商实际 Token Usage。
+
+## 第 15 章：真实文件修复闭环
+
+[章节](book/chapters/15.md) · [Coding Agent](src/mini_agent/coding_agent.py) · [可信 Fixture](src/mini_agent/coding_fixture.py) · [实验](examples/ch15_coding_lab.py) · [24 项测试](tests/test_ch15.py)
+
+```bash
+python examples/ch15_coding_lab.py
+# 可选：只创建新 Diff 文件，不覆盖已存在文件，不改写源目录。
+python examples/ch15_coding_lab.py --patch-output proposed.patch
+```
+
+实验真实执行 Inspect → Edit → Test → Verify：基线 4 个测试中有 3 个失败；首个错误候选被丢弃；第二个候选通过回归及独立验收，导出 Unified Diff。源目录保持不变。
+
+**Planner 默认为规则实现，不是真实 LLM 自主修复实验。** `ModelPatchPlanner` 兼容第 6 章 Model 接口，但当前测试 Runner 只能执行可信教学代码；未知仓库和模型生成代码必须交给真正隔离的 Worker。临时目录、`shell=False`、`-I` 和超时都不是安全沙箱。
 
 ## 项目结构
 

@@ -29,3 +29,4 @@ jobs:
       - run: python examples/ch12_durable_lab.py
       - run: python examples/ch13_research_lab.py
       - run: python examples/ch14_repository_map.py
+      - run: python examples/ch15_coding_lab.py
