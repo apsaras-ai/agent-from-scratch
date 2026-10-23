@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–15 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 16–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–16 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 17–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -19,14 +19,14 @@
 | 篇 | 内容 | 章节 |
 | --- | --- | --- |
 | 第一篇 | Agent 基础原理与系统模型 | 1–4 |
-| 第二篇 | 从零实现 Agent 核心架构 | 5–12 |
+| 第二篇 | 真实原理与实现：Agent 核心架构 | 5–12 |
 | 第三篇 | 真实场景：Research、Coding、Browser、Multi-Agent | 13–17 |
 | 第四篇 | 生产级 Runtime 与 Infrastructure | 18–24 |
 | 第五篇 | Evaluation、Benchmark 与优化 | 25–28 |
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -107,6 +107,23 @@ python examples/ch15_coding_lab.py --patch-output proposed.patch
 实验真实执行 Inspect → Edit → Test → Verify：基线 4 个测试中有 3 个失败；首个错误候选被丢弃；第二个候选通过回归及独立验收，导出 Unified Diff。源目录保持不变。
 
 **Planner 默认为规则实现，不是真实 LLM 自主修复实验。** `ModelPatchPlanner` 兼容第 6 章 Model 接口，但当前测试 Runner 只能执行可信教学代码；未知仓库和模型生成代码必须交给真正隔离的 Worker。临时目录、`shell=False`、`-I` 和超时都不是安全沙箱。
+
+## 第 16 章：真实浏览器的观察、审批与验收
+
+[章节](book/chapters/16.md) · [控制器](src/mini_agent/browser_agent.py) · [Playwright 适配器](src/mini_agent/browser_playwright.py) · [本机站点](src/mini_agent/browser_fixture.py) · [实验](examples/ch16_browser_lab.py)
+
+```bash
+python -m pip install -e '.[browser]'
+python -m playwright install chromium
+python examples/ch16_browser_lab.py
+RUN_BROWSER_TESTS=1 python -m unittest discover -s tests -p test_ch16_browser.py -v
+```
+
+在新 Chromium 会话中真实操作本机网页：搜索、打开文档、填写草稿、等待宿主批准、保存并检查服务端记录。目标是 **5 个浏览器动作、恰好一条正确草稿、零发布**。页面显示成功但没有后端记录时应验收失败。
+
+新增 [18 项离线契约测试](tests/test_ch16.py) 与 [8 项真实浏览器测试](tests/test_ch16_browser.py)。默认测试会跳过浏览器集成；独立 CI Job 安装 Chromium 并显式运行，缺失浏览器不是成功。
+
+**规则策略不是通用视觉 Agent。** 不使用用户浏览器或登录态；不接入付费 LLM。DOM/ARIA 快照、HTTP 路由与审批哈希均不构成生产安全沙箱、认证服务或原子页面事务。
 
 ## 项目结构
 

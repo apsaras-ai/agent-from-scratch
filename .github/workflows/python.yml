@@ -30,3 +30,23 @@ jobs:
       - run: python examples/ch13_research_lab.py
       - run: python examples/ch14_repository_map.py
       - run: python examples/ch15_coding_lab.py
+
+  browser:
+    name: Chromium integration (3.12)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      RUN_BROWSER_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[browser]'
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m unittest discover -s tests -p test_ch16_browser.py -v
+      - run: python examples/ch16_browser_lab.py
