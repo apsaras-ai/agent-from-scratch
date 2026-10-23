@@ -155,3 +155,16 @@ Event flow   : run.created, step.finished, run.paused ...
 ### 仍未实现
 
 Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派、强一致跨进程共享状态、Token/费用账本、Worker 租约、幂等工具副作用与 Durable Resume。后续第 18–24 章逐步完善。
+
+## 第 18 章：Agent Sandbox 与执行环境
+
+- [主机资源受限执行器](../src/mini_agent/process_executor.py)：Trust Host 注册脚本白名单并复制到临时 Workspace，用 Shell-Free `subprocess` + `start_new_session` + `selectors` 限制超时/输出，终止进程组及回收目录。**这不是 OS 隔离沙箱**，不允许执行未知/恶意代码。
+- [Resource Bootstrap](../src/mini_agent/_resource_child.py)：在受信任的子进程中设置 `RLIMIT_CPU`、`RLIMIT_AS`、`RLIMIT_FSIZE`、`RLIMIT_NOFILE` 再运行 Host 批准的 Python Fixture；这些限制不是 cgroup/VM 配额。
+- [Reservation Controller](../src/mini_agent/sandbox_reservations.py)：CPU millicores、Guest Memory + Runtime Overhead、Disk 的 Admission；TTL 到期设置 `reap_required`，直到可信 Control Plane 确认销毁之前都继续计入使用量。
+- [Read-only Diagnostics](../src/mini_agent/sandbox_diagnostics.py)：只读取当前进程的 Namespace 标识、cgroup v2 配置；不修改 Host。
+- [离线示例](../examples/ch18_sandbox_lab.py) · [可信 Fixture](../examples/ch18_trusted_worker.py) · [测试](../tests/test_ch18.py)。
+- [生产级隔离评审](ch18_sandbox_review.md)：真实 Firecracker/gVisor/OCI 交付必须实现的安全、验证、回收和观测契约。
+
+### 边界警告
+
+本章 CI **没有启动 MicroVM、执行 unshare、创建 cgroup 或部署 Seccomp**。Runner 里的 Child 与宿主共享 Mount、Network、UID、Kernel。恶意进程可以创建独立 Session、访问其他宿主资源、执行网络调用或绕过实验级控制。因此资源执行器只应执行可信 Fixture。真实多租户 Agent 需要硬隔离平台、租户授权、最低特权、出站网络限制、持久化资源租约与 Host 侧销毁验收。

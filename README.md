@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–17 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 18–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–18 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 19–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -50,6 +50,7 @@ python examples/ch10_planning_lab.py
 python examples/ch11_workflow_lab.py
 python examples/ch15_coding_lab.py
 python examples/ch17_multi_agent_lab.py
+python examples/ch18_sandbox_lab.py
 python -m unittest discover -s tests -v
 ```
 
@@ -138,6 +139,19 @@ python -m unittest discover -s tests -p 'test_ch17.py' -v
 演示在**同一合成问题与 Host Verifier** 下比较一个 Generalist Worker 与三个专业 Worker：前者串行完成三个委派，后者两个独立 I/O 调用并行执行，最终结果相同。另演示同一 Wave 对同一个 Shared Key 的竞争写入被整体拒绝，并由可信 Host 通过版本检查执行显式裁决。
 
 **工程边界**：默认 Worker 是确定性 Python 替身，不是真实 LLM 推理评测。模型适配仅使用 Fake Model 验证输出 JSON 与 Tool 权限；Worker 同进程执行、Blackboard 仅在内存中，未经安全审查不能用来运行任意不可信代码，真实 Agent 必须使用第 18–19 章的隔离和授权机制。
+
+## 第 18 章：Sandbox / Process / MicroVM 的隔离边界
+
+[第 18 章教材正文](book/chapters/18.md) · [进程资源限制器](src/mini_agent/process_executor.py) · [容量与租约模型](src/mini_agent/sandbox_reservations.py) · [系统只读诊断](src/mini_agent/sandbox_diagnostics.py) · [生产隔离验收清单](docs/ch18_sandbox_review.md) · [测试](tests/test_ch18.py)
+
+本章覆盖 Linux Namespace、cgroup v2、Rootless OCI、gVisor、Firecracker、Snapshot、Warm Pool、资源 Admission 和可靠销毁。附带可运行的 **Trusted Process Executor**，只对 Host 批准的 Python Fixture 进行 Resource Limit、Deadline、Output Cap 和 Scratch Cleanup 测试；它仍和宿主共享 Kernel、UID、Mount/Network，并不是防御恶意代码的 Sandbox。
+
+```bash
+python examples/ch18_sandbox_lab.py
+python -m unittest discover -s tests -p 'test_ch18.py' -v
+```
+
+**重要限制**：未知/模型生成代码必须部署到额外配置和审计过的容器、gVisor 或 MicroVM 中执行。代码提供的资源预留模拟器不会真实创建、销毁或隔离 VM；TTL 过期时不会假装已经释放仍在使用的容量。
 
 ## 项目结构
 
