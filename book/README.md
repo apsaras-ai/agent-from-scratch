@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–16 章已有正文初稿、参考文献、实验和单元测试；第 17–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–17 章已有正文初稿、参考文献、实验和单元测试；第 18–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -27,7 +27,7 @@
 - [第 14 章：Coding Agent 的代码仓库理解能力](chapters/14.md) · ✅ 正文初稿、Python AST Repository Map 实验
 - [第 15 章：构建自主 Coding Agent](chapters/15.md) · ✅ 正文初稿、真实文件修复闭环、回滚与独立验收
 - [第 16 章：Browser Agent 与 Computer Use](chapters/16.md) · ✅ 正文初稿、真实 Chromium、操作审批与后端验收
-- [第 17 章：Multi-Agent Systems](chapters/17.md)
+- [第 17 章：Multi-Agent Systems](chapters/17.md) · ✅ Supervisor、最小权限、共享状态 CAS、冲突裁决及单/多执行者实验
 
 ## 第四篇：生产级 Agent Runtime 与 Infrastructure
 
@@ -88,3 +88,5 @@
 - 第 15 章：[代码修复闭环](../examples/ch15_coding_lab.py) · [控制器](../src/mini_agent/coding_agent.py) · [可信 Fixture](../src/mini_agent/coding_fixture.py) · [24 项测试](../tests/test_ch15.py)
 
 - 第 16 章：[浏览器闭环实验](../examples/ch16_browser_lab.py) · [控制器](../src/mini_agent/browser_agent.py) · [Playwright](../src/mini_agent/browser_playwright.py) · [18 项离线测试](../tests/test_ch16.py) · [8 项浏览器集成测试](../tests/test_ch16_browser.py)
+
+- 第 17 章：[单/多执行者对照与冲突实验](../examples/ch17_multi_agent_lab.py) · [Supervisor/Blackboard](../src/mini_agent/multi_agent.py) · [Model Worker](../src/mini_agent/multi_agent_model.py) · [单元测试](../tests/test_ch17.py)

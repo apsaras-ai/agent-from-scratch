@@ -286,6 +286,29 @@ class OrchestrationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.reason, "verifier_error")
         self.assertIsNone(result.verification)
 
+    async def test_malformed_worker_reply_is_rejected_without_crashing(self):
+        class Malformed:
+            def __init__(self, reply):
+                self.reply = reply
+            async def act(self, delegation, inputs):
+                return self.reply
+
+        bad_replies = [
+            AgentReply("task", (ProposedArtifact("result", "ok"),), summary=None),
+            AgentReply("task", ("not_an_artifact",), summary="invalid"),
+            AgentReply("task", None, summary="invalid"),
+            AgentReply("task", (ProposedArtifact("result", "ok"),), summary="x" * 2001),
+        ]
+        for index, reply in enumerate(bad_replies):
+            with self.subTest(index=index):
+                board = Blackboard("malformed-" + str(index))
+                result = await Supervisor({
+                    "worker": specialist(worker=Malformed(reply)),
+                }).execute(one_task(), board=board,
+                          verifier=lambda _: Verification(True, "not reached"))
+                self.assertEqual(result.reason, "invalid_worker_reply")
+                self.assertFalse(board.snapshot())
+
     async def test_artifact_validation_and_atomicity(self):
         class Overlong:
             async def act(self, delegation, inputs):

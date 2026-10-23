@@ -134,3 +134,24 @@ Event flow   : run.created, step.finished, run.paused ...
 ## 第 9 章：Memory Service（教学版）
 
 带来源、版本、过期、租户/所有者作用域的 Memory Store；词项覆盖率、字符哈希向量、RRF 混合检索。身份过滤先于排序。无持久化、真实 Embedding、认证和物理硬删除。
+
+## 第 17 章：Multi-Agent Supervisor / Blackboard（教学版）
+
+- [控制器](../src/mini_agent/multi_agent.py)：`AgentIdentity`、`DelegatedTask`、`Delegation`、`AgentReply`、`Supervisor`、`Blackboard`、`HostResolution`，以及只读输入视图和逐 Key CAS。
+- [专长 Worker Fixture](../src/mini_agent/multi_agent_fixture.py)：API、QA、Writer 三种角色，可与单 Generalist 作相同验收标准下的离线对比。
+- [模型适配](../src/mini_agent/multi_agent_model.py)：兼容第 4/6 章 Model Protocol 的严格 JSON 结果提议；调用模型时不授予工具执行权限。
+- [实验](../examples/ch17_multi_agent_lab.py)：Single Worker 三轮、Multi-Agent 两轮、同 Key 并发冲突与可信 Host 显式版本裁决。
+- [测试](../tests/test_ch17.py)：非法委派、输入/输出权限、数据冲突、乐观版本、Host 裁决、预算、Worker Timeout、独立验收和无效 JSON。
+
+### 核心不变量
+
+1. Worker 只能读取当前 Task 显式声明的 Input Keys，不能经模型文字自行授予更多写入能力。
+2. Worker 只能返回 ProposedArtifact；由可信 Supervisor 检查 Task ID、写权限、输出集合、版本并提交真实 Artifact。
+3. 每个并发 Wave 的写入在当前进程内**整批提交或整批拒绝**；已成功的较早 Wave 不会自动回滚。
+4. 同 Key 并发冲突不会走 Last Writer Wins，必须重新规划或可信 Host 根据新证据显式处理。
+5. 最终状态只有通过独立 Verifier 才是 `verified`，Worker 自报 `done` 不能替代验收。
+6. 规则 Worker 与短延时合成 I/O 的实验**不能证明真实 LLM 多 Agent 的能力或成本收益**。
+
+### 仍未实现
+
+Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派、强一致跨进程共享状态、Token/费用账本、Worker 租约、幂等工具副作用与 Durable Resume。后续第 18–24 章逐步完善。

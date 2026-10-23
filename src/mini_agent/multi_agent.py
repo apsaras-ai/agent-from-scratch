@@ -56,7 +56,11 @@ class AgentIdentity:
     writable_keys: frozenset[str]
 
     def __post_init__(self) -> None:
-        if not self.agent_id or not isinstance(self.readable_keys, frozenset) or not isinstance(self.writable_keys, frozenset):
+        if (not isinstance(self.agent_id, str) or not self.agent_id.strip()
+                or not isinstance(self.readable_keys, frozenset)
+                or not isinstance(self.writable_keys, frozenset)
+                or any(not isinstance(k, str) or not k for k in
+                       self.readable_keys | self.writable_keys)):
             raise CollaborationError("Invalid agent identity/capabilities")
 
 
@@ -202,8 +206,11 @@ class Blackboard:
         for task, specialist, reply, expected in actions:
             if not isinstance(reply, AgentReply) or reply.task_id != task.task_id:
                 raise CollaborationError("worker_reply_task_mismatch")
-            if len(reply.summary) > 2000 or not isinstance(reply.summary, str):
+            if not isinstance(reply.summary, str) or len(reply.summary) > 2000:
                 raise CollaborationError("invalid_worker_summary")
+            if (not isinstance(reply.writes, tuple) or len(reply.writes) > 32
+                    or any(not isinstance(p, ProposedArtifact) for p in reply.writes)):
+                raise CollaborationError("invalid_worker_writes")
             keys = [proposal.key for proposal in reply.writes]
             if len(set(keys)) != len(keys) or set(keys) != set(task.outputs):
                 raise CollaborationError("worker_outputs_do_not_match_delegation")
@@ -229,7 +236,13 @@ class Blackboard:
 
     def reconcile(self, decision: HostResolution) -> Artifact:
         """Explicit host override with a CAS; never performed automatically."""
-        if decision.run_id != self.run_id or not decision.decided_by.strip() or not decision.rationale.strip():
+        if (decision.run_id != self.run_id
+                or not isinstance(decision.decided_by, str)
+                or not decision.decided_by.strip()
+                or not isinstance(decision.rationale, str)
+                or not decision.rationale.strip()
+                or (decision.expected_version is not None and (
+                    type(decision.expected_version) is not int or decision.expected_version < 1))):
             raise CollaborationError("invalid_host_resolution")
         actual = self.versions((decision.key,))[decision.key]
         if decision.expected_version != actual:
