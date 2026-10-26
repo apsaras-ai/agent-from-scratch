@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–21 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 22–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–22 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 23–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [第 22 章正文](book/chapters/22.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -54,6 +54,7 @@ python examples/ch18_sandbox_lab.py
 python examples/ch19_security_lab.py
 python examples/ch20_scheduler_lab.py
 python examples/ch21_reliability_lab.py
+python examples/ch22_observability_lab.py
 python -m unittest discover -s tests -v
 ```
 
@@ -194,6 +195,19 @@ python -m unittest discover -s tests -p 'test_ch21.py' -v
 ```
 
 **能力边界**：Synthetic Provider 的外部业务状态只在内存中模拟；没有真实邮件/支付、网络、Worker IAM、OS 沙箱或分布式 Exactly-Once。Host Reaper 确认仍是可信 Fixture，不能直接把 `actually_destroyed=True` 交给未经授权的模型或客户端。Code + Unit Tests 验证控制不变量，不代替生产 Provider 契约和跨系统故障演练。
+
+## 第 22 章：Agent Observability 与 Debugging
+
+[章节正文](book/chapters/22.md) · [Trace Recorder](src/mini_agent/observability.py) · [JSONL Trace Store & Playback](src/mini_agent/trace_store.py) · [Model/Tool Instrumentation Bridge](src/mini_agent/observability_bridge.py) · [离线实验](examples/ch22_observability_lab.py) · [39 项单元测试](tests/test_ch22.py) · [生产观测上线清单](docs/ch22_observability_review.md)
+
+本章将第 4 章 Agent Kernel / Tool Registry 与第 6 章 Model Gateway 接到隐私优先 Trace Recorder，支持 W3C Version 00 Traceparent、\`asyncio\` ContextVar 父子关系、Model/Tool Span、安全 Error Code、Provider Usage、显式版本 Price Card 的 Decimal 费用估算、有界 JSONL Export、哈希链和只读 Playback。
+
+默认**不记录 Prompt、Tool Arguments/Results、异常内容、身份或凭证**；未知 Tool Name 也归一化，避免模型借元数据泄漏信息。Token Usage 或价格缺失时保持 Unknown，不把未知当作零。实验采用可信 Fake Gateway，**未实现生产 OpenTelemetry SDK/OTLP、跨租户日志 IAM 或完整 DLP**；Hash Chain 不是数字签名或不可篡改审计。
+
+~~~bash
+python examples/ch22_observability_lab.py
+python -m unittest discover -s tests -p 'test_ch22.py' -v
+~~~
 
 ## 项目结构
 

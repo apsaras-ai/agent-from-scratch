@@ -235,3 +235,26 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 与第 20 章的关系
 
 第 20 章 `SQLiteTaskScheduler` 负责 Job/Attempt/Lease/Resource Scheduling；第 21 章 `OutboxStore` 负责业务意图及外部副作用投递。二者当前是**独立教学模型**，不能跨两个 SQLite 文件组成一个真正原子事务。生产需设计统一的 Task/Activity/Operation ID、统一 Event History、Outbox/Inbox、外部幂等与 Host 审计。第 22 章将进一步实现 Tracing、错误根因分析和成本/运行时计量。
+
+## 第 22 章：Agent Observability 与 Debugging（隐私优先教学实现）
+
+- [Trace Recorder](../src/mini_agent/observability.py)：W3C Trace Context Version 00 解析/格式化、随机 Trace/Span ID、`ContextVar` 异步父子关系、有界 Span/Event、严格 Attribute Allowlist、安全错误分类、独立 Verifier 字段和显式 Rate Card。
+- [Trace Store & Playback](../src/mini_agent/trace_store.py)：仅导出安全元数据的 JSONL、原子文件替换、SHA-256 哈希链、文件/Span/属性校验、只读诊断和 Cost/Verifier Summary。
+- [Model/Tool Bridge](../src/mini_agent/observability_bridge.py)：调用第 4 章 `AgentKernel` / `ToolRegistry` 和第 6 章 `GatewayResponse`，记录受控 Model/Tool Spans，不记录 Prompt、Tool Arguments、Tool Results。
+- [离线实验](../examples/ch22_observability_lab.py)：模型先请求未知工具被拒绝，再调用已批准 Fixture Tool 一次，最终通过 Host Verifier；三次合成 Model Calls 记录 Token/Rate Card Cost；回放零次外部执行。
+- [39 项测试](../tests/test_ch22.py)：W3C、隐私 Allowlist、Async ContextVar、未知 Tool/异常脱敏、Token 缺失与 Price Cost、哈希链篡改、只读 Replay、实际 Kernel/Tool Adapter 权限不绕过。
+- [生产 Observability 审查清单](ch22_observability_review.md)：OTel/OTLP、权限、Telemetry Budget、Cache Usage、成本、历史回放和安全审计。
+
+### 核心不变量
+
+1. **Tracer 是观测层，不是 Run/Operation 的权威状态服务**。Trace ID 仅用于关联，不能充当跨租户 IAM 权限或 Tool Approval。
+2. 使用可信、有限标签而非记录所有 Prompt/Completion/Tool Arguments/Results；未知 Tool Name 与 Exception Error Code 不可由模型任意注入可能敏感的文本。
+3. `gen_ai.usage.input_tokens`、`gen_ai.usage.output_tokens` 对应 Provider 明确报告的 Token；Cache Component 已计入总 Input 时不能重复累加。
+4. `RateCard.version` 必须显式提供；缺失 Token Usage/Price 时费用保持 Unknown，而不是假设为零；本章 Price 是合成示例，不是生产账单。
+5. 中间 Tool Span Error 不直接决定 Task Failed，最终验收只从独立 Verifier Span 判定。
+6. `replay_diagnostic` **绝不重新调用外部工具或模型**。JSONL 哈希链只能检测未经重算的改动，不提供数字签名、身份真实性或不可篡改审计。
+7. 异步子 Span 共享正确 Parent ID；跨机器需要真正的 W3C/OTel Context Propagator，当前只解析严格 Version 00 字符串。
+
+### 未实现与后续
+
+不是完整 OpenTelemetry SDK/OTLP Exporter、遥测 Collector、签名审计、多租户访问控制、Sampling/Tail-Sampling 服务、生产 Trace/Log/Metric Backend、真实 Model Billing、跨机时钟校正或安全调试授权系统。第 23 章将使用这里的安全观测原则进一步研究 Agent 性能与成本优化。

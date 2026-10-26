@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–21 章已有正文初稿、参考文献、实验和单元测试；第 22–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–22 章已有正文初稿、参考文献、实验和单元测试；第 23–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -35,7 +35,7 @@
 - [第 19 章：Agent Security](chapters/19.md) · ✅ 正文初稿、Reference Monitor、短期签名审批和安全负面测试
 - [第 20 章：Agent Runtime 调度与并发](chapters/20.md) · ✅ SQLite Queue、Lease/Fencing、Tenant Fairness、Retry 和 Reaper 状态机
 - [第 21 章：Agent Reliability 与故障恢复](chapters/21.md) · ✅ Transactional Outbox、未知外部效果核对、Circuit Breaker、Saga 与故障注入
-- [第 22 章：Agent Observability 与 Debugging](chapters/22.md)
+- [第 22 章：Agent Observability 与 Debugging](chapters/22.md) · ✅ Trace、Model/Tool Span、Token/费用、隐私过滤与只读回放
 - [第 23 章：Agent Performance 与 Cost Optimization](chapters/23.md)
 - [第 24 章：Agent 平台化与生产部署](chapters/24.md)
 
@@ -98,3 +98,5 @@
 - 第 20 章：[调度离线实验](../examples/ch20_scheduler_lab.py) · [SQLite Scheduler](../src/mini_agent/runtime_scheduler.py) · [33 项单元测试](../tests/test_ch20.py) · [生产化验收清单](../docs/ch20_scheduler_review.md)
 
 - 第 21 章：[SQLite Outbox 与故障实验](../examples/ch21_reliability_lab.py) · [Operation Ledger](../src/mini_agent/reliability_outbox.py) · [Resilience Patterns](../src/mini_agent/resilience_patterns.py) · [36 项单元测试](../tests/test_ch21.py) · [生产审查清单](../docs/ch21_reliability_review.md)
+
+- 第 22 章：[Trace/费用实验](../examples/ch22_observability_lab.py) · [Recorder](../src/mini_agent/observability.py) · [Playback](../src/mini_agent/trace_store.py) · [Bridge](../src/mini_agent/observability_bridge.py) · [39 项测试](../tests/test_ch22.py) · [生产观测审查](../docs/ch22_observability_review.md)
