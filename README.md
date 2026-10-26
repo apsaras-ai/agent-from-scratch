@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–26 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 27–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–27 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 28–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -245,6 +245,19 @@ python -m unittest discover -s tests -p 'test_ch25.py' -v
 python examples/ch26_benchmark_lab.py
 python -m unittest discover -s tests -p 'test_ch26.py' -v
 ```
+
+## 第 27 章：从零实现 Agent Evaluation Framework
+
+[完整正文](book/chapters/27.md) · [CampaignStore / Dashboard](src/mini_agent/eval_campaign.py) · [离线实验](examples/ch27_evaluation_framework_lab.py) · [14 项测试](tests/test_ch27.py)
+
+本章在第 25–26 章 Harness/Benchmark 之上增加有版本的 CampaignSpec、可信评测结果聚合、SQLite 事务与 Revision CAS、配对改进/退化统计以及**不含隐藏答案、Prompt/Tool 参数的静态 HTML Dashboard**。评测仍使用真实 AgentKernel + Fake Model + Toy Environment 的合成任务，不能由结果推断真实模型表现。
+
+```bash
+python examples/ch27_evaluation_framework_lab.py
+python -m unittest discover -s tests -p 'test_ch27.py' -v
+```
+
+**边界**：Campaign `approve` 是评测决策，不是生产 Release 执行回执；没有身份服务、真实联网工具、部署操作或 OS Sandbox。真实 Benchmark 要把可信 Grader 与不可信 Agent Worker 隔离，并通过认证的发布控制面消费结果。
 
 ## 项目结构
 

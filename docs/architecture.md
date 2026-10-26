@@ -314,3 +314,12 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 - [生产验收清单](ch26_benchmark_review.md)：外部评测环境版本、数据污染、隔离、统计和隐私。
 
 **边界**：没有运行真实外部 Benchmark，也没有测量任何商业模型表现。真实 Benchmark 必须采用独立受信任的 Sandbox、数据集授权和公开协议。
+
+
+## 第 27 章：Evaluation Campaign / Regression Gate / Dashboard
+
+- [`eval_campaign.py`](../src/mini_agent/eval_campaign.py)：`CampaignSpec`/`CampaignStore`/`CampaignSnapshot`、`dashboard_html`，通过 SQLite `BEGIN IMMEDIATE`、Revision CAS 和 Protocol Digest 管理一次评测活动。
+- [`ch27_evaluation_framework_lab.py`](../examples/ch27_evaluation_framework_lab.py)：沿用第 25–26 章真实合成 Runner、独立 Outcome/Policy Grader、Regression Gate，保存安全聚合并生成离线 HTML。
+- [`test_ch27.py`](../tests/test_ch27.py)：14 项持久化、幂等、并发 CAS、模型结果非权威、Benchmark Protocol 不匹配、静态 HTML Escape 与日志脱敏测试。
+
+核心信任边界：Campaign 只保存已汇总的安全评分、结果分类与协议指纹，**不存原始 Prompt/Tool Args/隐藏标准答案**；`approve` 只是评测判定，不能自动更改生产环境。真实多租户服务还需认证、隔离 Runner、可靠 Trial Lease、隐藏 Grader 与签名 Eval Receipt。
