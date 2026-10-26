@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–19 章已有正文初稿、参考文献、实验和单元测试；第 20–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–20 章已有正文初稿、参考文献、实验和单元测试；第 21–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -33,7 +33,7 @@
 
 - [第 18 章：Agent Sandbox 与执行环境](chapters/18.md) · ✅ 正文初稿、可信进程限制器、资源租约模型及系统隔离架构
 - [第 19 章：Agent Security](chapters/19.md) · ✅ 正文初稿、Reference Monitor、短期签名审批和安全负面测试
-- [第 20 章：Agent Runtime 调度与并发](chapters/20.md)
+- [第 20 章：Agent Runtime 调度与并发](chapters/20.md) · ✅ SQLite Queue、Lease/Fencing、Tenant Fairness、Retry 和 Reaper 状态机
 - [第 21 章：Agent Reliability 与故障恢复](chapters/21.md)
 - [第 22 章：Agent Observability 与 Debugging](chapters/22.md)
 - [第 23 章：Agent Performance 与 Cost Optimization](chapters/23.md)
@@ -94,3 +94,5 @@
 - 第 18 章：[受限进程与生命周期实验](../examples/ch18_sandbox_lab.py) · [Process Executor](../src/mini_agent/process_executor.py) · [Admission/Lease](../src/mini_agent/sandbox_reservations.py) · [生产安全验收清单](../docs/ch18_sandbox_review.md) · [单元测试](../tests/test_ch18.py)
 
 - 第 19 章：[Agent Security 离线攻防](../examples/ch19_security_lab.py) · [Reference Monitor](../src/mini_agent/security_monitor.py) · [安全测试](../tests/test_ch19.py) · [生产安全审查清单](../docs/ch19_security_review.md)
+
+- 第 20 章：[调度离线实验](../examples/ch20_scheduler_lab.py) · [SQLite Scheduler](../src/mini_agent/runtime_scheduler.py) · [33 项单元测试](../tests/test_ch20.py) · [生产化验收清单](../docs/ch20_scheduler_review.md)

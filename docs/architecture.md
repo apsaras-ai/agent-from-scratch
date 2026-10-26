@@ -190,3 +190,25 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 后续集成点
 
 第 20–21 章将把 Host PEP 接到 Durable Scheduler 与 Sandbox Tool Backend；第 22 章增加受控追踪、审计和异常检测；第 25–28 章用含正常任务/攻击案例的 Benchmark 衡量成功率、误拒率与实际攻击成功率。
+
+## 第 20 章：Agent Runtime Scheduling / Queue（教学版）
+
+- [SQLite Durable Task Scheduler](../src/mini_agent/runtime_scheduler.py)：`JobSpec`、`SchedulerLimits`、`WorkerLease`、`WorkerIdentity`、`SQLiteTaskScheduler`、`AsyncWorkerPool`。
+- [离线演示](../examples/ch20_scheduler_lab.py)：两个 Tenant 的可信 Async Handler 并行执行、独立验收；对非幂等失联任务演示 Lease 过期、资源继续占用、Fake Host 清理确认及外部效果核对。
+- [33 项单元测试](../tests/test_ch20.py)：跨连接 SQLite Claim、Tenant Fairness、Priority、Admission、Lease、Heartbeat、Generation Fencing、Backpressure、Cancel、Retry 与 Non-Idempotent Reconciliation。
+- [生产部署验收清单](ch20_scheduler_review.md)：完整 Worker/Host Identity、Admission/Quota、实时 Reaper、沙箱销毁、故障注入、外部副作用和集群指标。
+
+### 核心不变量
+
+1. `submit` 用 SQLite 事务接收任务，幂等请求需同 Tenant/Run/Idempotency Key 和相同 Payload/资源，不同内容拒绝。
+2. `claim` 使用 `BEGIN IMMEDIATE`，保证同一 SQLite 文件上的并发 Claim 不会双重领取当前 Job；Tenant 选择按最近服务轮次，每 Tenant 的 Job 按 Priority 排序。
+3. Worker Lease 有随机 Token、单调 Generation、截止时间；心跳、完成和错误报告必须通过有效 Lease Fencing。
+4. `running` 和 `reap_required` 都占用真实资源预算；Lease 过期不释放 Capacity，只有可信 Host 确认实际 Sandbox/Worker 清理后才可迁移到下一状态。
+5. `NON_IDEMPOTENT` 结果未知时进入 `needs_reconciliation`，不自动重试；可信 Host 查证外部结果后决定是否完成、取消或有上限地重试。
+6. 任务取消不等于工作负载已停止；Running 任务需要 Worker ACK 或 Host Reaping。最终 `verified` 只能由可信、独立 Verifier 判定。
+7. Backpressure 统计 Live Job 而不只是 Ready Job；还需 Tenant Scope 和三维资源 Admission。
+8. `job_events` 不写入原始模型输入、业务 Payload、Lease Token 或 Secret。
+
+### 未实现与后续内容
+
+本章**不提供**多机 Worker IAM、真实 Container/VM/KVM 隔离、真实外部副作用 Exactly-Once、自动 Heartbeat/Reaper 后台服务、数据库 HA、跨 Region 调度或生产公平性 SLA。`HostCapacity` 与 `SandboxAllocation` 复用第 18 章资源模型；第 19 章的安全策略需要部署在 Worker 外的可信 Tool Proxy。第 21–23 章将扩展可靠恢复、Tracing、性能与费用账本。
