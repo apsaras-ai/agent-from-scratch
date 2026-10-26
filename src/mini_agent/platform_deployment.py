@@ -286,7 +286,7 @@ def reference_kubernetes_objects(manifest: PlatformManifest) -> tuple[dict[str, 
 @dataclass(frozen=True)
 class CanaryPolicy:
     stages: tuple[int, ...] = (5, 25, 50, 100)
-    min_verified: int = 20
+    min_attempts: int = 20
     min_seconds: int = 60
     min_verified_rate: float = .96
     max_latency_ratio: float = 1.25
@@ -298,12 +298,12 @@ class CanaryPolicy:
                 or tuple(sorted(set(self.stages))) != self.stages
                 or self.stages[-1] != 100):
             raise DeploymentError("invalid_canary_stages")
-        if (not _positive_int(self.min_verified) or
+        if (not _positive_int(self.min_attempts) or
                 not _positive_int(self.min_seconds)):
             raise DeploymentError("invalid_minimum_evidence")
-        if (type(self.min_verified_rate) not in (int, float)
-                or not math.isfinite(self.min_verified_rate)
-                or not 0 < self.min_verified_rate <= 1):
+        if (type(self.min_attempts_rate) not in (int, float)
+                or not math.isfinite(self.min_attempts_rate)
+                or not 0 < self.min_attempts_rate <= 1):
             raise DeploymentError("invalid_success_rate_policy")
         if (type(self.max_latency_ratio) not in (int, float)
                 or not math.isfinite(self.max_latency_ratio)
@@ -370,12 +370,12 @@ def judge_canary(
         return RolloutJudgment("abort", "security_incident", weight, 0)
     if (candidate.elapsed_seconds < policy.min_seconds or
             baseline.elapsed_seconds < policy.min_seconds or
-            candidate.attempted < policy.min_verified or
-            baseline.attempted < policy.min_verified):
+            candidate.attempted < policy.min_attempts or
+            baseline.attempted < policy.min_attempts):
         return RolloutJudgment("pause", "insufficient_observation", weight, weight)
     if not baseline.verified:
         return RolloutJudgment("pause", "missing_verified_baseline", weight, weight)
-    if candidate.verified / candidate.attempted < policy.min_verified_rate:
+    if candidate.verified / candidate.attempted < policy.min_attempts_rate:
         return RolloutJudgment("abort", "verified_success_regression", weight, 0)
     if baseline.p95_latency_ms == 0:
         return RolloutJudgment("pause", "missing_latency_baseline", weight, weight)

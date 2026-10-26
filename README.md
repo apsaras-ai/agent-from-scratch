@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–23 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 24–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–24 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 25–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [第 22 章正文](book/chapters/22.md) · [第 23 章正文](book/chapters/23.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [第 22 章正文](book/chapters/22.md) · [第 23 章正文](book/chapters/23.md) · [第 24 章正文](book/chapters/24.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -208,6 +208,19 @@ python -m unittest discover -s tests -p 'test_ch21.py' -v
 python examples/ch22_observability_lab.py
 python -m unittest discover -s tests -p 'test_ch22.py' -v
 ~~~
+
+## 第 24 章：Agent 平台化与生产部署
+
+[完整教材](book/chapters/24.md) · [配置预检 + Canary Release Ledger](src/mini_agent/platform_deployment.py) · [合成平台 Fixture](src/mini_agent/platform_fixture.py) · [可运行实验](examples/ch24_platform_lab.py) · [37 项单元测试](tests/test_ch24.py) · [生产上线审查清单](docs/ch24_platform_review.md)
+
+本章提供**多租户 Agent Platform 的可信部署决策原型**：Control/Execution Plane 分离、不可变 Image Digest、ServiceAccount/Namespace、CPU/Memory 预算、默认拒绝网络、独立执行 Runtime，以及 Canary **质量/延迟/成本/安全**多指标发布门。`ReleaseLedger` 使用 SQLite 保存 Manifest/Policy 指纹、每阶段决策和 Generation CAS，拒绝不安全配置和过时控制器的状态更新。
+
+```bash
+python examples/ch24_platform_lab.py
+python -m unittest discover -s tests -p 'test_ch24.py' -v
+```
+
+**工程边界**：此实现只生成 K8s 参考 JSON 并保存*期望发布决策*，不会调用集群 API、Argo Rollouts、Ingress，也不部署 gVisor/MicroVM；受信任观测指标均为合成数据。Pod 安全声明与 `runtimeClassName` 字符串不能证明真实隔离。实际生产必须增加 IAM、Admission、网络策略执行、真正发布/回滚回执、持续监控及外部副作用核对。
 
 ## 项目结构
 

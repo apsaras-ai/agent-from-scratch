@@ -312,7 +312,7 @@ class LedgerTests(unittest.TestCase):
         with self.assertRaises(DeploymentError):
             self.ledger.initialize(changed, self.policy)
         with self.assertRaises(DeploymentError):
-            self.ledger.initialize(self.spec, CanaryPolicy(min_verified=40))
+            self.ledger.initialize(self.spec, CanaryPolicy(min_attempts=40))
 
     def test_progressive_release_requires_four_healthy_evaluations(self):
         s = self.initialize()

@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–23 章已有正文初稿、参考文献、实验和单元测试；第 24–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–24 章已有正文初稿、参考文献、实验和单元测试；第 25–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -37,7 +37,7 @@
 - [第 21 章：Agent Reliability 与故障恢复](chapters/21.md) · ✅ Transactional Outbox、未知外部效果核对、Circuit Breaker、Saga 与故障注入
 - [第 22 章：Agent Observability 与 Debugging](chapters/22.md) · ✅ Trace、Model/Tool Span、Token/费用、隐私过滤与只读回放
 - [第 23 章：Agent Performance 与 Cost Optimization](chapters/23.md) · ✅ Token/RateCard、关键路径、缓存 Scope 和成本质量门
-- [第 24 章：Agent 平台化与生产部署](chapters/24.md)
+- [第 24 章：Agent 平台化与生产部署](chapters/24.md) · ✅ 多租户配置、K8s 参考清单、Canary Gate、CAS 发布账本及 37 项测试
 
 ## 第五篇：Agent Evaluation、Benchmark 与系统优化
 
@@ -100,3 +100,5 @@
 - 第 21 章：[SQLite Outbox 与故障实验](../examples/ch21_reliability_lab.py) · [Operation Ledger](../src/mini_agent/reliability_outbox.py) · [Resilience Patterns](../src/mini_agent/resilience_patterns.py) · [36 项单元测试](../tests/test_ch21.py) · [生产审查清单](../docs/ch21_reliability_review.md)
 
 - 第 22 章：[Trace/费用实验](../examples/ch22_observability_lab.py) · [Recorder](../src/mini_agent/observability.py) · [Playback](../src/mini_agent/trace_store.py) · [Bridge](../src/mini_agent/observability_bridge.py) · [39 项测试](../tests/test_ch22.py) · [生产观测审查](../docs/ch22_observability_review.md)
+
+- 第 24 章：[部署模拟实验](../examples/ch24_platform_lab.py) · [Preflight/Canary Controller](../src/mini_agent/platform_deployment.py) · [合成 Fixture](../src/mini_agent/platform_fixture.py) · [37 项单测](../tests/test_ch24.py) · [生产上线清单](../docs/ch24_platform_review.md)

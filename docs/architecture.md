@@ -258,3 +258,26 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 未实现与后续
 
 不是完整 OpenTelemetry SDK/OTLP Exporter、遥测 Collector、签名审计、多租户访问控制、Sampling/Tail-Sampling 服务、生产 Trace/Log/Metric Backend、真实 Model Billing、跨机时钟校正或安全调试授权系统。第 23 章将使用这里的安全观测原则进一步研究 Agent 性能与成本优化。
+
+
+## 第 24 章：Agent Platform 与生产发布（离线决策原型）
+
+- [`platform_deployment.py`](../src/mini_agent/platform_deployment.py)：`ServiceProfile`、`TenantProfile`、`PlatformManifest`、`preflight`、`reference_kubernetes_objects`、`CanaryPolicy`、`judge_canary`、`ReleaseLedger`。
+- [`platform_fixture.py`](../src/mini_agent/platform_fixture.py)：四个服务、两个租户、不变镜像摘要、Host-owned 合成灰度指标，**无真实价格、请求或网络**。
+- [`ch24_platform_lab.py`](../examples/ch24_platform_lab.py)：预检 → 参考 JSON → 缺少指标暂停 → 逐阶段推进 → 安全事故中止；只写本地临时 SQLite 发布决策。
+- [`test_ch24.py`](../tests/test_ch24.py)：37 项测试覆盖不安全镜像/权限/网络/租户、数据库 Schema 兼容、样本不足、独立成功率、P95、Cost per Verified Task、Release CAS/重放及终态。
+- [`ch24_platform_review.md`](ch24_platform_review.md)：部署前权限、Tenant、网络、ResourceQuota、RuntimeClass、Probe/HPA、SLO、Canary、Observed State、Rollback/DR 的生产审查清单。
+
+### 关键不变量
+
+1. 受信任 Control Plane 管理身份、策略、部署和外部副作用；LLM/Tool/MCP/Worker 不能通过文字更改权限、服务镜像、预算或发布阈值。
+2. Preflight 对四个必须服务、不可变 SHA-256 Image Digest、Rootless/Seccomp/最小特权、ServiceAccount/Namespace、Default Deny Network、执行 Runtime、基本数据库兼容检查提供**静态负面测试**。
+3. `reference_kubernetes_objects` 是为了离线学习而生成的 JSON，不是可直接部署的完整生产 K8s 应用；`registry.invalid` 和 RuntimeClassName 是故意不操作真实系统的占位。
+4. Canary Gate **缺少观测/样本量时暂停**，安全事故与已确认的质量/延迟/成本回归时中止，全部指标通过才推进；每阶段都用可信、独立的 Task Verifier，而不是 Worker 自报。
+5. SQLite `ReleaseLedger` 用 Manifest/Policy Fingerprint + Generation CAS 防止两个控制器或旧决策覆盖新状态，并保存不含用户内容的事件元数据。
+6. `status=aborted, weight=0` 是期望发布决策，**不是集群 Traffic 已切回 Stable 的凭据**；发布仍需可信 Actuator、实际状态读回、独立运维验收。
+7. Traffic Rollback 不能撤销真实邮件、支付、部署或其他 Tool Side Effect；必须和第 21 章的 Operation Ledger、Reconciliation 与补偿流程组合使用。
+
+### 生产欠缺
+
+尚未实现真实 K8s/Argo API、Registry/Image Signature Verification、Admission Controller、Ingress/Network Egress、安全运行时安装、IAM/Secret Broker、External Traffic Reconciliation、SLO 数据查询、灾难恢复和跨集群发布。真实环境需额外审批、实测和运行手册。
