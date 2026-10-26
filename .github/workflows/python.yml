@@ -37,6 +37,7 @@ jobs:
       - run: python examples/ch21_reliability_lab.py
       - run: python examples/ch22_observability_lab.py
       - run: python examples/ch23_optimization_lab.py
+      - run: python examples/ch24_platform_lab.py
 
   browser:
     name: Chromium integration (3.12)
