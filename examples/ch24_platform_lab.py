@@ -49,7 +49,12 @@ def main() -> None:
         while state.status not in ("promoted", "aborted"):
             judgment, state = ledger.decide(
                 state.release_id, expected_generation=state.generation,
-                baseline=stable, candidate=canary,
+                baseline=stable,
+                candidate=replace(
+                    canary, observed_weight=state.weight,
+                    window_id="candidate-" + str(state.weight)
+                              + "-" + str(state.generation),
+                ),
             )
             print("  decision:", judgment.action,
                   "status:", state.status, "weight:", state.weight)
@@ -63,7 +68,9 @@ def main() -> None:
         _, halted = ledger.decide(
             second.release_id, expected_generation=halted.generation,
             baseline=stable,
-            candidate=replace(canary, security_incidents=1),
+            candidate=replace(
+                canary, security_incidents=1, release_id=second.release_id
+            ),
         )
         print("Security incident:", halted.status,
               "planned traffic weight:", halted.weight)

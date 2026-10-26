@@ -187,6 +187,11 @@ class CanaryGateTests(unittest.TestCase):
         self.assertEqual((output.action, output.next_weight),
                          ("promote", 25))
 
+    def test_candidate_observed_weight_mismatch_pauses(self):
+        v = self.decision(new=replace(self.good, observed_weight=25))
+        self.assertEqual((v.action, v.reason),
+                         ("pause", "observation_weight_mismatch"))
+
     def test_missing_evidence_pauses(self):
         v = judge_canary(None, self.good, weight=5,
                          next_weight=25, policy=self.policy)
@@ -250,6 +255,8 @@ class CanaryGateTests(unittest.TestCase):
             replace(self.good, total_cost_usd=Decimal("NaN"))
         with self.assertRaises(DeploymentError):
             replace(self.good, source="self_reported_model")
+        with self.assertRaises(DeploymentError):
+            replace(self.good, window_id="../escape")
 
     def test_invalid_policy_stages_rejected(self):
         for stages in ((5, 25, 25, 100), (50, 25, 100), (5, 50), (), (100, 10)):
@@ -281,12 +288,54 @@ class LedgerTests(unittest.TestCase):
         return self.ledger.initialize(self.spec, self.policy)
 
     def decide(self, snap, baseline=None, canary=None):
+        scoped_candidate = (
+            replace(
+                self.canary, observed_weight=snap.weight,
+                window_id="window-" + str(snap.weight) + "-" + str(snap.generation),
+            )
+            if canary is None else canary
+        )
         return self.ledger.decide(
             self.spec.release_id,
             expected_generation=snap.generation,
             baseline=self.baseline if baseline is None else baseline,
-            candidate=self.canary if canary is None else canary,
+            candidate=scoped_candidate,
         )
+
+    def test_replayed_measurement_cannot_approve_later_stage(self):
+        snap = self.initialize()
+        _, first = self.decide(snap, canary=self.canary)
+        self.assertEqual(first.weight, 25)
+        reused = replace(self.canary, observed_weight=25)
+        verdict, after = self.decide(first, canary=reused)
+        self.assertEqual((verdict.action, verdict.reason),
+                         ("pause", "reused_observation_window"))
+        self.assertEqual(after.weight, 25)
+        self.assertEqual(after.status, "paused")
+
+    def test_wrong_release_measurements_rejected_without_state_change(self):
+        snap = self.initialize()
+        with self.assertRaises(DeploymentError):
+            self.decide(snap, canary=replace(
+                self.canary, release_id="unrelated-release",
+            ))
+        with self.assertRaises(DeploymentError):
+            self.decide(snap, baseline=replace(
+                self.baseline, release_id="unrelated-stable",
+            ))
+        self.assertEqual(self.ledger.load(snap.release_id), snap)
+
+    def test_distinct_stage_windows_can_progress_and_record_count(self):
+        snap = self.initialize()
+        for _ in range(4):
+            _, snap = self.decide(snap)
+        self.assertEqual(snap.status, "promoted")
+        with self.ledger._connect() as db:
+            count = db.execute(
+                "SELECT count(*) FROM release_metric_windows "
+                "WHERE release_id=?", (self.spec.release_id,)
+            ).fetchone()[0]
+        self.assertEqual(count, 4)
 
     def test_release_created_with_5_percent_and_durable_event(self):
         state = self.initialize()

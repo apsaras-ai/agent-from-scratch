@@ -66,11 +66,13 @@ def healthy_metrics() -> tuple[CanaryMetrics, CanaryMetrics]:
         CanaryMetrics(
             elapsed_seconds=120, attempted=100, verified=99,
             p95_latency_ms=200, total_cost_usd=Decimal("10"),
-            security_incidents=0,
+            security_incidents=0, release_id="stable-v1",
+            observed_weight=0, window_id="stable-w1",
         ),
         CanaryMetrics(
             elapsed_seconds=120, attempted=50, verified=49,
             p95_latency_ms=215, total_cost_usd=Decimal("5.10"),
-            security_incidents=0,
+            security_incidents=0, release_id="release-001",
+            observed_weight=5, window_id="canary-w5",
         ),
     )

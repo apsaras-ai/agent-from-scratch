@@ -211,7 +211,7 @@ python -m unittest discover -s tests -p 'test_ch22.py' -v
 
 ## 第 24 章：Agent 平台化与生产部署
 
-[完整教材](book/chapters/24.md) · [配置预检 + Canary Release Ledger](src/mini_agent/platform_deployment.py) · [合成平台 Fixture](src/mini_agent/platform_fixture.py) · [可运行实验](examples/ch24_platform_lab.py) · [37 项单元测试](tests/test_ch24.py) · [生产上线审查清单](docs/ch24_platform_review.md)
+[完整教材](book/chapters/24.md) · [配置预检 + Canary Release Ledger](src/mini_agent/platform_deployment.py) · [合成平台 Fixture](src/mini_agent/platform_fixture.py) · [可运行实验](examples/ch24_platform_lab.py) · [41 项单元测试](tests/test_ch24.py) · [生产上线审查清单](docs/ch24_platform_review.md)
 
 本章提供**多租户 Agent Platform 的可信部署决策原型**：Control/Execution Plane 分离、不可变 Image Digest、ServiceAccount/Namespace、CPU/Memory 预算、默认拒绝网络、独立执行 Runtime，以及 Canary **质量/延迟/成本/安全**多指标发布门。`ReleaseLedger` 使用 SQLite 保存 Manifest/Policy 指纹、每阶段决策和 Generation CAS，拒绝不安全配置和过时控制器的状态更新。
 

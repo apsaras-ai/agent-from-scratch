@@ -323,6 +323,9 @@ class CanaryMetrics:
     p95_latency_ms: float
     total_cost_usd: Decimal
     security_incidents: int
+    release_id: str
+    observed_weight: int
+    window_id: str
     source: str = "trusted-observer"
 
     def __post_init__(self) -> None:
@@ -336,6 +339,11 @@ class CanaryMetrics:
                 or self.p95_latency_ms < 0):
             raise DeploymentError("invalid_latency_measurement")
         object.__setattr__(self, "total_cost_usd", _money(self.total_cost_usd))
+        if (not _valid_name(self.release_id)
+                or not _valid_name(self.window_id)
+                or type(self.observed_weight) is not int
+                or not 0 <= self.observed_weight <= 100):
+            raise DeploymentError("invalid_metric_scope_or_window")
         if self.source != "trusted-observer":
             raise DeploymentError("trusted_observation_required")
 
@@ -366,6 +374,8 @@ def judge_canary(
         raise DeploymentError("invalid_rollout_weight")
     if baseline is None or candidate is None:
         return RolloutJudgment("pause", "missing_evidence", weight, weight)
+    if baseline.observed_weight != 0 or candidate.observed_weight != weight:
+        return RolloutJudgment("pause", "observation_weight_mismatch", weight, weight)
     if candidate.security_incidents:
         return RolloutJudgment("abort", "security_incident", weight, 0)
     if (candidate.elapsed_seconds < policy.min_seconds or
@@ -453,6 +463,11 @@ class ReleaseLedger:
                 weight INTEGER NOT NULL,
                 stage_index INTEGER NOT NULL,
                 reason TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS release_metric_windows(
+                release_id TEXT NOT NULL, window_id TEXT NOT NULL,
+                observed_weight INTEGER NOT NULL,
+                PRIMARY KEY(release_id,window_id)
             );
             CREATE TABLE IF NOT EXISTS release_events(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -573,6 +588,10 @@ class ReleaseLedger:
                 raise VersionConflict("stale_release_generation")
             if snap.status in ("promoted", "aborted"):
                 raise DeploymentError("release_is_terminal")
+            if baseline is not None and baseline.release_id != snap.stable_version:
+                raise DeploymentError("baseline_release_mismatch")
+            if candidate is not None and candidate.release_id != snap.release_id:
+                raise DeploymentError("candidate_release_mismatch")
             policy_obj = json.loads(row["policy_json"])
             policy_obj["stages"] = tuple(policy_obj["stages"])
             policy = CanaryPolicy(**policy_obj)
@@ -584,6 +603,21 @@ class ReleaseLedger:
                 baseline, candidate, weight=snap.weight,
                 next_weight=next_weight, policy=policy,
             )
+            if verdict.action == "promote" and candidate is not None:
+                previous_window = db.execute(
+                    "SELECT 1 FROM release_metric_windows "
+                    "WHERE release_id=? AND window_id=?",
+                    (release_id, candidate.window_id),
+                ).fetchone()
+                if previous_window is not None:
+                    verdict = RolloutJudgment(
+                        "pause", "reused_observation_window", snap.weight, snap.weight
+                    )
+                else:
+                    db.execute(
+                        "INSERT INTO release_metric_windows VALUES(?,?,?)",
+                        (release_id, candidate.window_id, candidate.observed_weight),
+                    )
             if verdict.action == "abort":
                 state, index, weight = "aborted", index, 0
             elif verdict.action == "pause":

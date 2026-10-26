@@ -71,6 +71,7 @@ rollback_plan + host_approval
 
 - [ ] 发布策略有小流量起点、逐级放量、每阶段最少样本量与观测时间窗口。
 - [ ] Canary/Stable 的任务类型、用户群、版本、成本口径可比较。
+- [ ] 观测绑定 Release ID、Traffic Weight 和唯一窗口 ID；已批准的窗口不得跨阶段重放。
 - [ ] 独立 Business Verifier 输出 Task Success，不能使用模型 `done` 作为成功。
 - [ ] Provider Usage、Token/Tool/Sandbox Cost 包含失败、重试、验收消耗。
 - [ ] P95/P99 Latency 衡量端到端用户 Task，而不是仅模型首 Token 时间。
