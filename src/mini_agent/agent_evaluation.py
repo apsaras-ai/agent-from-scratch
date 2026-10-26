@@ -362,7 +362,11 @@ def wilson_interval(successes:int,n:int,z:float=1.959963984540054) -> tuple[floa
     denom = 1+z*z/n
     center=(p+z*z/(2*n))/denom
     half=z*math.sqrt(p*(1-p)/n+z*z/(4*n*n))/denom
-    return max(0,center-half),min(1,center+half)
+    # Wilson bounds at 0/n and n/n are exact; don't let floating-point
+    # cancellation yield 0.9999999999999999 instead of 1.0.
+    lower = 0.0 if successes == 0 else max(0.0,center-half)
+    upper = 1.0 if successes == n else min(1.0,center+half)
+    return lower,upper
 
 
 class EvalHarness:
