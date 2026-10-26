@@ -305,3 +305,12 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 生产缺口
 
 本章没有真实模型调用、真实业务数据库/浏览器外部状态、独立 OS 级评测沙箱、Host IAM、真实 LLM-as-a-Judge 校准、真实计费或大规模任务集统计代表性。第 26–28 章将扩展 Benchmark、Evaluation 体系和性能/质量优化。
+
+## 第 26 章：Benchmark 与结果回归
+
+- [Framework](../src/mini_agent/benchmark_framework.py)：版本化 BenchmarkProtocol、DomainScore、Micro/Macro 成绩、失败分类、协议摘要与 Gate。
+- [合成实验](../examples/ch26_benchmark_lab.py)：同一 Dataset/Tool/Model Fixture 的 Baseline/Candidate 对照、结果复现、回归判断。
+- [单元测试](../tests/test_ch26.py)：15 项验证协议一致、独立验收、环境越权、复现、费用缺失和版本冲突。
+- [生产验收清单](ch26_benchmark_review.md)：外部评测环境版本、数据污染、隔离、统计和隐私。
+
+**边界**：没有运行真实外部 Benchmark，也没有测量任何商业模型表现。真实 Benchmark 必须采用独立受信任的 Sandbox、数据集授权和公开协议。

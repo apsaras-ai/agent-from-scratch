@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–25 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 26–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–26 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 27–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [第 22 章正文](book/chapters/22.md) · [第 23 章正文](book/chapters/23.md) · [第 24 章正文](book/chapters/24.md) · [第 25 章正文](book/chapters/25.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [第 22 章正文](book/chapters/22.md) · [第 23 章正文](book/chapters/23.md) · [第 24 章正文](book/chapters/24.md) · [第 25 章正文](book/chapters/25.md) · [第 26 章正文](book/chapters/26.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -234,6 +234,17 @@ python -m unittest discover -s tests -p 'test_ch25.py' -v
 ```
 
 **能力边界**：真正调用本书 AgentKernel，但规则 Fake Model、Toy Tool Environment、价格与时间均为合成数据；Dataset 仅有六条公开 Case，Heldout 标签不能代表真实保密基准。接口级隔离隐藏目标状态**不是安全 Sandbox**。本章没有测试任何真实语言模型的能力或安全性，不应把模拟成功率当作现实表现。
+
+## 第 26 章：Agent Benchmark 体系
+
+[教材正文](book/chapters/26.md) · [Benchmark Framework](src/mini_agent/benchmark_framework.py) · [离线实验](examples/ch26_benchmark_lab.py) · [15 项测试](tests/test_ch26.py) · [生产审查清单](docs/ch26_benchmark_review.md)
+
+本章提供 Versioned Benchmark Protocol、多领域切片、Micro/Macro Success、Failure Taxonomy、结果复现检查与安全/回归阻断。复用第 25 章的六条合成任务和 AgentKernel/Fake Model，**不运行真实 SWE-bench、WebArena、OSWorld、GAIA 或 BrowseComp**。
+
+```bash
+python examples/ch26_benchmark_lab.py
+python -m unittest discover -s tests -p 'test_ch26.py' -v
+```
 
 ## 项目结构
 
