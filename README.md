@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–24 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 25–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–25 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 26–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [第 22 章正文](book/chapters/22.md) · [第 23 章正文](book/chapters/23.md) · [第 24 章正文](book/chapters/24.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [第 20 章正文](book/chapters/20.md) · [第 21 章正文](book/chapters/21.md) · [第 22 章正文](book/chapters/22.md) · [第 23 章正文](book/chapters/23.md) · [第 24 章正文](book/chapters/24.md) · [第 25 章正文](book/chapters/25.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -222,6 +222,19 @@ python -m unittest discover -s tests -p 'test_ch24.py' -v
 
 **工程边界**：此实现只生成 K8s 参考 JSON 并保存*期望发布决策*，不会调用集群 API、Argo Rollouts、Ingress，也不部署 gVisor/MicroVM；受信任观测指标均为合成数据。Pod 安全声明与 `runtimeClassName` 字符串不能证明真实隔离。实际生产必须增加 IAM、Admission、网络策略执行、真正发布/回滚回执、持续监控及外部副作用核对。
 
+## 第 25 章：Agent Evaluation 基础
+
+[完整正文](book/chapters/25.md) · [Agent Evaluation Harness](src/mini_agent/agent_evaluation.py) · [实际 AgentKernel + Fake Model 适配](src/mini_agent/eval_fixture.py) · [六条合成任务数据集](evals/ch25_offline_suite.json) · [离线实验](examples/ch25_eval_lab.py) · [40 项单元测试](tests/test_ch25.py) · [生产评测验收清单](docs/ch25_eval_review.md)
+
+本章建立**版本化 Dataset → 公开 Task → 受控工具环境 → 实际 Tool Effect → 独立 Outcome/Safety Grader → 统计报告**的完整教学流程。最终通过状态不依赖模型自报 `completed` 或 LLM-as-a-Judge 分数。框架可计算 Observed `pass@k`、`pass^k`、按不同 Case 首次 Trial 的 Wilson 区间和成对版本改进/退化，并在 Provider Usage/RateCard 缺失时将费用保持 Unknown。
+
+```bash
+python examples/ch25_eval_lab.py
+python -m unittest discover -s tests -p 'test_ch25.py' -v
+```
+
+**能力边界**：真正调用本书 AgentKernel，但规则 Fake Model、Toy Tool Environment、价格与时间均为合成数据；Dataset 仅有六条公开 Case，Heldout 标签不能代表真实保密基准。接口级隔离隐藏目标状态**不是安全 Sandbox**。本章没有测试任何真实语言模型的能力或安全性，不应把模拟成功率当作现实表现。
+
 ## 项目结构
 
 ```text
@@ -229,6 +242,7 @@ book/                 # 7 篇、34 章教材导航与章节写作骨架
 docs/                 # 架构说明、资料索引与贡献指南
 src/mini_agent/       # 最小可运行 Agent 核心、工具系统与模型适配
 examples/             # 离线示例、真实模型示例
+evals/                # 版本化合成 Agent Evaluation 数据集
 tests/                # 标准库 unittest
 .github/workflows/    # Python CI
 ```

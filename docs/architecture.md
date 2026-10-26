@@ -281,3 +281,27 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 生产欠缺
 
 尚未实现真实 K8s/Argo API、Registry/Image Signature Verification、Admission Controller、Ingress/Network Egress、安全运行时安装、IAM/Secret Broker、External Traffic Reconciliation、SLO 数据查询、灾难恢复和跨集群发布。真实环境需额外审批、实测和运行手册。
+
+
+## 第 25 章：Agent Evaluation 基础（可信合成教学框架）
+
+- [`agent_evaluation.py`](../src/mini_agent/agent_evaluation.py)：`EvalCase` / `EvalSuite` / `PublicTask` / `FixtureEnvironment` / `EvalHarness` / `EvalReport`，版本摘要、环境结果验收、政策检查、费用覆盖、统计/对照。
+- [`eval_fixture.py`](../src/mini_agent/eval_fixture.py)：使用第 4 章真实 `AgentKernel/ModelReply/ToolCall/ToolRegistry` 和确定性 Fake Model 调用受控读写工具。
+- [`ch25_offline_suite.json`](../evals/ch25_offline_suite.json)：六条合成 Research/Coding/Browser/Tool/Security Case，`dev/regression/heldout` 分组，但非真实保密基准。
+- [`ch25_eval_lab.py`](../examples/ch25_eval_lab.py)：Baseline/Candidate 同一 Heldout 的多次 Trial；演示环境结果高于模型 `done`，以及 `pass@k`、`pass^k`、Wilson/Paired Statistics。
+- [`test_ch25.py`](../tests/test_ch25.py)：40 项对照/负例测试，覆盖数据版本、非法 JSON、Trial Reset、工具拒绝、Outcome/Policy Grader、未知费用、错误脱敏、统计边界。
+- [`ch25_eval_review.md`](ch25_eval_review.md)：从合成 Fixture 走向正式多任务 Benchmark、LLM Judge 校准、真实隔离与业务验收的安全/统计检查。
+
+### 关键不变量
+
+1. **模型自报完成不是任务真正完成的证据**。`EvalHarness` 通过环境状态与隐藏 `expected_state` 独立比较，且越权工具尝试不能通过完整安全检查。
+2. `PublicTask` 仅提供公开输入/可写资源，Hidden Ground Truth 不经过正式 Agent Runner 接口；但**Python 同进程执行不能阻止恶意代码偷看隐藏数据**，需要第 18–19 章真正的 Sandbox/IAM。
+3. Tool Events 和 Eval Report 只包含受控类型、原因码和指标，不存原始 Prompt/Tool Arguments、Secret 或模型最终回答。
+4. Judge Score 是辅助信号；如果它错误地相信 `completed` 文本，不能覆盖可信 Outcome Verifier。
+5. 费用需要实际/合成完整的 Usage、RateCard、Tool Cost；未知不能写成零，失败尝试属于总成本。
+6. 多次 Trial 的 Observed `pass@k` 与 `pass^k` 不是同一个指标；只对不同 Case 的首次 Trial 计算教学 Wilson/McNemar，避免伪独立样本导致错误统计信心。
+7. Baseline/Candidate 必须同 Dataset Digest、Split、Trial IDs 才做成对比较；合成规则模型的分数并不代表真实 LLM 能力。
+
+### 生产缺口
+
+本章没有真实模型调用、真实业务数据库/浏览器外部状态、独立 OS 级评测沙箱、Host IAM、真实 LLM-as-a-Judge 校准、真实计费或大规模任务集统计代表性。第 26–28 章将扩展 Benchmark、Evaluation 体系和性能/质量优化。
