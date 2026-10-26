@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–18 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 19–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–19 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 20–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -26,7 +26,7 @@
 | 第六篇 | 高级推理、Agentic RL 与自我改进 | 29–32 |
 | 第七篇 | 端到端的生产级 Coding Agent | 33–34 |
 
-➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
+➡️ [第 1 章正文](book/chapters/01.md) · [第 2 章正文](book/chapters/02.md) · [第 3 章正文](book/chapters/03.md) · [第 4 章正文](book/chapters/04.md) · [第 5 章正文](book/chapters/05.md) · [第 6 章正文](book/chapters/06.md) · [第 7 章正文](book/chapters/07.md) · [第 8 章正文](book/chapters/08.md) · [第 9 章正文](book/chapters/09.md) · [第 10 章正文](book/chapters/10.md) · [第 11 章正文](book/chapters/11.md) · [第 12 章正文](book/chapters/12.md) · [第 13 章正文](book/chapters/13.md) · [第 14 章正文](book/chapters/14.md) · [第 15 章正文](book/chapters/15.md) · [第 16 章正文](book/chapters/16.md) · [第 17 章正文](book/chapters/17.md) · [第 18 章正文](book/chapters/18.md) · [第 19 章正文](book/chapters/19.md) · [完整 34 章目录](book/README.md) · [核心架构](docs/architecture.md) · [大学公开课与阅读资料](docs/references.md)
 
 第 1 章可运行实验：`python examples/ch01_workflow_vs_agent.py`（完全离线，比较 Pipeline、条件 Workflow 和规则式 Policy Loop；不把手写策略误称为 LLM 推理）。
 
@@ -51,6 +51,7 @@ python examples/ch11_workflow_lab.py
 python examples/ch15_coding_lab.py
 python examples/ch17_multi_agent_lab.py
 python examples/ch18_sandbox_lab.py
+python examples/ch19_security_lab.py
 python -m unittest discover -s tests -v
 ```
 
@@ -152,6 +153,19 @@ python -m unittest discover -s tests -p 'test_ch18.py' -v
 ```
 
 **重要限制**：未知/模型生成代码必须部署到额外配置和审计过的容器、gVisor 或 MicroVM 中执行。代码提供的资源预留模拟器不会真实创建、销毁或隔离 VM；TTL 过期时不会假装已经释放仍在使用的容量。
+
+## 第 19 章：Agent Security
+
+[完整章节](book/chapters/19.md) · [Security Reference Monitor](src/mini_agent/security_monitor.py) · [离线攻防实验](examples/ch19_security_lab.py) · [33 项安全测试](tests/test_ch19.py) · [上线安全审查清单](docs/ch19_security_review.md)
+
+本章以 **Model Proposal ≠ Host Authorization** 为核心，演示 Principal/Run/Resource 白名单、JSON Schema、固定 HTTPS Endpoint、短期 HMAC 审批、参数摘要、单进程防重放、执行预算、合成敏感输出检查和只记录元数据的审计。
+
+```bash
+python examples/ch19_security_lab.py
+python -m unittest discover -s tests -p 'test_ch19.py' -v
+```
+
+**重要限制**：没有访问真实网络或系统资源；攻击与密钥全是合成数据。Python Reference Monitor 不是 OS Sandbox、IAM、KMS、网络 Egress Proxy、完整 DLP 或 Prompt Injection 免疫证明。未知工具与不可信执行进程必须放到独立安全边界中处理。
 
 ## 项目结构
 

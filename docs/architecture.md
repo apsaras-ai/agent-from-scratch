@@ -168,3 +168,25 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 边界警告
 
 本章 CI **没有启动 MicroVM、执行 unshare、创建 cgroup 或部署 Seccomp**。Runner 里的 Child 与宿主共享 Mount、Network、UID、Kernel。恶意进程可以创建独立 Session、访问其他宿主资源、执行网络调用或绕过实验级控制。因此资源执行器只应执行可信 Fixture。真实多租户 Agent 需要硬隔离平台、租户授权、最低特权、出站网络限制、持久化资源租约与 Host 侧销毁验收。
+
+## 第 19 章：Agent Security Reference Monitor（教学版）
+
+- [参考监视器](../src/mini_agent/security_monitor.py)：`Principal`、`SecurityPolicy`、`ToolSpec`、`ActionProposal`、`ApprovalAuthority`、`ApprovalTicket`、`SecurityReferenceMonitor`、`SecretBroker`。
+- [离线安全实验](../examples/ch19_security_lab.py)：恶意文档仅当作外部 Data；未知工具、越权目标、未经批准的 Write 被拒绝；Exact Action HMAC Approval 允许模拟写操作，并拒绝重放。
+- [自动化测试](../tests/test_ch19.py)：33 项，覆盖 Principal、Tool/Resource、JSON、Schema、Egress、Expired/Tampered Approval、Replay、Budget、模拟 Secret DLP、日志隐私以及权限拒绝。
+- [生产级 Security Checklist](ch19_security_review.md)：涵盖身份、审批、网络、Secret Manager、供应链、MCP、Memory、Multi-Agent、沙箱、审计和 Incident Response。
+
+### 不可违反的约束
+
+1. **不可信模型/网页/工具/记忆只提交动作提议，没有能力签发权限**。Host 创建 Principal/Policy，注册真正的 Handler，并执行 Reference Monitor。
+2. WRITE/EGRESS/DESTRUCTIVE 需要由 Host 控制的 HMAC 签名 Approval，绑定 Principal、Tool、Call ID、Canonical Args、Expiry、Nonce；Destructive 还需要额外风险 Gate。
+3. Resource Exact Allowlist 和固定 HTTPS Endpoint 必须先于 Handler 执行；只允许明确批准的 Destination。真实 DNS/IP/Redirect/Egress 仍需在独立网络网关强制。
+4. 对登记的合成 Secret 既检查 EGRESS 参数，也检查返回给模型的 Output；此字符串扫描不构成完整 DLP。
+5. Tool Call ID 和审批 Nonce 防重放只在当前进程内有效；真正多机 Exactly-Once/Revocation 需要持久化 CAS/DB 和可信身份服务。
+6. Handler 发生错误或结果被阻止时，不自动认为副作用已回滚；需要使用 Durable Operation Ledger 与外部结果确认。
+7. Audit Events 不保存原始 Prompt、Tool Args、密钥和 Tool Result；摘要与日志依旧应作为敏感数据访问控制。
+8. **本章完全不提供进程隔离、IAM、KMS、密码保险箱或真实网络安全证明**；与第 18 章硬隔离、后续 Reliability/Observability 系统共同组成生产防御体系。
+
+### 后续集成点
+
+第 20–21 章将把 Host PEP 接到 Durable Scheduler 与 Sandbox Tool Backend；第 22 章增加受控追踪、审计和异常检测；第 25–28 章用含正常任务/攻击案例的 Benchmark 衡量成功率、误拒率与实际攻击成功率。

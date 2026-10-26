@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–18 章已有正文初稿、参考文献、实验和单元测试；第 19–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–19 章已有正文初稿、参考文献、实验和单元测试；第 20–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -32,7 +32,7 @@
 ## 第四篇：生产级 Agent Runtime 与 Infrastructure
 
 - [第 18 章：Agent Sandbox 与执行环境](chapters/18.md) · ✅ 正文初稿、可信进程限制器、资源租约模型及系统隔离架构
-- [第 19 章：Agent Security](chapters/19.md)
+- [第 19 章：Agent Security](chapters/19.md) · ✅ 正文初稿、Reference Monitor、短期签名审批和安全负面测试
 - [第 20 章：Agent Runtime 调度与并发](chapters/20.md)
 - [第 21 章：Agent Reliability 与故障恢复](chapters/21.md)
 - [第 22 章：Agent Observability 与 Debugging](chapters/22.md)
@@ -92,3 +92,5 @@
 - 第 17 章：[单/多执行者对照与冲突实验](../examples/ch17_multi_agent_lab.py) · [Supervisor/Blackboard](../src/mini_agent/multi_agent.py) · [Model Worker](../src/mini_agent/multi_agent_model.py) · [单元测试](../tests/test_ch17.py)
 
 - 第 18 章：[受限进程与生命周期实验](../examples/ch18_sandbox_lab.py) · [Process Executor](../src/mini_agent/process_executor.py) · [Admission/Lease](../src/mini_agent/sandbox_reservations.py) · [生产安全验收清单](../docs/ch18_sandbox_review.md) · [单元测试](../tests/test_ch18.py)
+
+- 第 19 章：[Agent Security 离线攻防](../examples/ch19_security_lab.py) · [Reference Monitor](../src/mini_agent/security_monitor.py) · [安全测试](../tests/test_ch19.py) · [生产安全审查清单](../docs/ch19_security_review.md)
