@@ -74,7 +74,7 @@ def _validate_snapshot(s: SpanSnapshot) -> None:
     if ((s.status == "ok" and s.error_code is not None)
             or (s.status != "ok" and (
                 not isinstance(s.error_code, str)
-                or s.error_code not in _SAFE_ERROR_CODES)))):
+                or s.error_code not in _SAFE_ERROR_CODES))):
         raise TraceIntegrityError("invalid_error_code")
     _safe_labels(s.attributes)
     if not isinstance(s.events, tuple) or len(s.events) > 128:
