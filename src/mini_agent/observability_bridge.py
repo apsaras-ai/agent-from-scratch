@@ -87,8 +87,13 @@ class TracedToolRegistry:
         # Tool names remain strictly bounded labels; never log arguments_json.
         if not isinstance(call, ToolCall) or not _LABEL.fullmatch(call.name):
             raise TraceError("invalid_tool_call_label")
+        # Never log a model-invented tool name as a label: it could itself
+        # encode private data. Approved tool names are host-owned metadata.
+        approved = {item["function"]["name"]
+                    for item in self.tools.descriptions()}
+        safe_name = call.name if call.name in approved else "unregistered_tool"
         with self.tracer.span("execute_tool", attributes={
-            "gen_ai.tool.name": call.name,
+            "gen_ai.tool.name": safe_name,
         }) as span:
             observed = self.tools.invoke(call, allow_writes=allow_writes)
             if not observed.get("ok"):

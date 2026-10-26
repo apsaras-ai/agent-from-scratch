@@ -154,6 +154,14 @@ class RecorderTests(unittest.TestCase):
             with self.trace.span("invoke_agent"):
                 pass
 
+    def test_arbitrary_error_message_cannot_become_trace_error_code(self):
+        with self.trace.span("invoke_agent") as root:
+            with self.assertRaisesRegex(TraceError, "unapproved_error_code"):
+                root.fail("SYNTHETIC_PRIVATE_TOKEN_AS_ERROR")
+            root.fail("tool_denied")
+        self.assertNotIn("SYNTHETIC_PRIVATE_TOKEN_AS_ERROR",
+                         repr(self.trace.snapshots()))
+
     def test_tool_failure_is_structured_but_can_have_successful_parent(self):
         with self.trace.span("invoke_agent"):
             with self.trace.span("execute_tool") as tool:
@@ -409,7 +417,7 @@ class PlaybackTests(unittest.TestCase):
         # Re-hashing an altered trace is possible without a signing key.
         # This test only checks the hash chain, not actor authenticity.
         entries = [json.loads(line) for line in self.path.read_text().splitlines()]
-        entries[1]["record"]["error_code"] = "fabricated"
+        entries[1]["record"]["error_code"] = "tool_timeout"
         prev = "0" * 64
         for n, entry in enumerate(entries, 1):
             entry["previous_hash"] = prev
@@ -424,7 +432,7 @@ class PlaybackTests(unittest.TestCase):
             separators=(",", ":"),
         ) for entry in entries) + "\n")
         changed = replay_diagnostic(self.path)
-        self.assertEqual(changed.primary_failure, "execute_tool:fabricated")
+        self.assertEqual(changed.primary_failure, "execute_tool:tool_timeout")
         # Cryptographic signature and append-only storage are NOT implemented.
 
 
@@ -506,6 +514,17 @@ class IntegrationTests(unittest.TestCase):
         self.assertFalse(denied["ok"])
         self.assertEqual(count[0], 0)
         self.assertNotIn("SYNTHETIC_CANARY", repr(self.tracer.snapshots()))
+
+    def test_unknown_tool_name_redacted_even_if_label_shaped_like_secret(self):
+        tools = ToolRegistry()
+        wrapped = TracedToolRegistry(tools, self.tracer)
+        private_label = "PRIVATE_FAKE_TOKEN_ABC_9876"
+        with self.tracer.span("invoke_agent"):
+            result = wrapped.invoke(ToolCall("call-a", private_label, "{}"))
+        self.assertFalse(result["ok"])
+        exported = repr(self.tracer.snapshots())
+        self.assertNotIn(private_label, exported)
+        self.assertIn("unregistered_tool", exported)
 
     def test_invalid_tool_label_rejected_before_call(self):
         tools = ToolRegistry()

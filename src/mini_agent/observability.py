@@ -44,6 +44,14 @@ _INTEGER_ATTRIBUTES = frozenset({
     "agent.retry.attempt",
 })
 _BOOL_ATTRIBUTES = frozenset({"agent.verification.passed"})
+_SAFE_ERROR_CODES = frozenset({
+    "unhandled_exception", "operation_cancelled",
+    "tool_rejected_or_failed", "tool_denied", "tool_timeout",
+    "tool_execution_failed", "model_transport_failure",
+    "model_protocol_invalid", "provider_rate_limited",
+    "resource_exhausted", "worker_failed", "fixture_error",
+    "verification_failed", "provider_timeout",
+})
 _EVENT_NAMES = frozenset({
     "worker_claimed", "approval_required", "approval_granted",
     "retry_scheduled", "tool_denied", "checkpoint_saved",
@@ -245,8 +253,8 @@ class SpanHandle:
             self.add_event("verification_passed" if passed else "verification_failed")
 
     def fail(self, code: str) -> None:
-        if not isinstance(code, str) or not _LABEL.fullmatch(code):
-            raise TraceError("invalid_safe_error_code")
+        if not isinstance(code, str) or code not in _SAFE_ERROR_CODES:
+            raise TraceError("unapproved_error_code")
         with self._tracer._lock:
             span = self._live()
             span.status = "error"

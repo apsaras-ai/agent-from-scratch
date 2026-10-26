@@ -22,7 +22,7 @@ from typing import Any, Iterable
 
 from .observability import (
     SpanSnapshot, SpanEvent, TraceRecorder, TraceError,
-    _ID16, _ID32, _OPERATIONS, _EVENT_NAMES, _LABEL, _safe_labels,
+    _ID16, _ID32, _OPERATIONS, _EVENT_NAMES, _SAFE_ERROR_CODES, _safe_labels,
 )
 
 
@@ -74,7 +74,7 @@ def _validate_snapshot(s: SpanSnapshot) -> None:
     if ((s.status == "ok" and s.error_code is not None)
             or (s.status != "ok" and (
                 not isinstance(s.error_code, str)
-                or not _LABEL.fullmatch(s.error_code)))):
+                or s.error_code not in _SAFE_ERROR_CODES)))):
         raise TraceIntegrityError("invalid_error_code")
     _safe_labels(s.attributes)
     if not isinstance(s.events, tuple) or len(s.events) > 128:
