@@ -22,7 +22,7 @@ from typing import Any, Iterable
 
 from .observability import (
     SpanSnapshot, SpanEvent, TraceRecorder, TraceError,
-    _ID16, _ID32, _OPERATIONS, _EVENT_NAMES, _SAFE_ERROR_CODES, _safe_labels,
+    _ID16, _ID32, _OPERATIONS, _EVENT_NAMES, _SAFE_ERROR_CODES, _LABEL, _safe_labels,
 )
 
 
