@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–22 章已有正文初稿、参考文献、实验和单元测试；第 23–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–23 章已有正文初稿、参考文献、实验和单元测试；第 24–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -36,7 +36,7 @@
 - [第 20 章：Agent Runtime 调度与并发](chapters/20.md) · ✅ SQLite Queue、Lease/Fencing、Tenant Fairness、Retry 和 Reaper 状态机
 - [第 21 章：Agent Reliability 与故障恢复](chapters/21.md) · ✅ Transactional Outbox、未知外部效果核对、Circuit Breaker、Saga 与故障注入
 - [第 22 章：Agent Observability 与 Debugging](chapters/22.md) · ✅ Trace、Model/Tool Span、Token/费用、隐私过滤与只读回放
-- [第 23 章：Agent Performance 与 Cost Optimization](chapters/23.md)
+- [第 23 章：Agent Performance 与 Cost Optimization](chapters/23.md) · ✅ Token/RateCard、关键路径、缓存 Scope 和成本质量门
 - [第 24 章：Agent 平台化与生产部署](chapters/24.md)
 
 ## 第五篇：Agent Evaluation、Benchmark 与系统优化
