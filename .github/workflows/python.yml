@@ -32,6 +32,7 @@ jobs:
       - run: python examples/ch15_coding_lab.py
       - run: python examples/ch17_multi_agent_lab.py
       - run: python examples/ch18_sandbox_lab.py
+      - run: python examples/ch19_security_lab.py
 
   browser:
     name: Chromium integration (3.12)
