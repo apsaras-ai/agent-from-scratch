@@ -41,8 +41,34 @@ _VALID_REASONS = frozenset({
     "approval_expired", "approval_scope_mismatch", "approval_replayed",
     "destructive_tool_denied", "duplicate_call_id", "tool_budget_exhausted",
     "execution_failed", "output_too_large", "non_json_output",
-    "sensitive_output_blocked",
+    "sensitive_output_blocked", "sensitive_argument_blocked",
 })
+
+
+
+def _reject_remote_schema_refs(value: Any) -> None:
+    """No remote/file:// JSON Schema dereferencing from tool metadata."""
+    if isinstance(value, dict):
+        for key, child in value.items():
+            if key in ("$ref", "$dynamicRef", "$recursiveRef"):
+                if not isinstance(child, str) or not child.startswith("#"):
+                    raise SecurityError("external_schema_reference_denied")
+            _reject_remote_schema_refs(child)
+    elif isinstance(value, list):
+        for child in value:
+            _reject_remote_schema_refs(child)
+
+
+def _contains_protected(value: Any, protected: tuple[str, ...]) -> bool:
+    """Exact known-string check of decoded JSON, NOT production-grade DLP."""
+    if isinstance(value, str):
+        return any(secret in value for secret in protected)
+    if isinstance(value, dict):
+        return any(_contains_protected(k, protected) or
+                   _contains_protected(v, protected) for k, v in value.items())
+    if isinstance(value, list):
+        return any(_contains_protected(v, protected) for v in value)
+    return False
 
 
 class SecurityError(ValueError):
@@ -126,6 +152,16 @@ class ToolSpec:
             raise SecurityError("invalid_tool_schema_root")
         if self.parameters.get("additionalProperties") is not False:
             raise SecurityError("explicit_additional_properties_false_required")
+        if self.parameters.get("$schema") not in (
+            None, "https://json-schema.org/draft/2020-12/schema"
+        ):
+            raise SecurityError("unsupported_schema_draft")
+        try:
+            if len(json.dumps(self.parameters, allow_nan=False)) > 64_000:
+                raise SecurityError("schema_too_large")
+        except (TypeError, ValueError) as exc:
+            raise SecurityError("invalid_schema_data") from exc
+        _reject_remote_schema_refs(self.parameters)
         try:
             Draft202012Validator.check_schema(self.parameters)
         except SchemaError as exc:
@@ -471,6 +507,11 @@ class SecurityReferenceMonitor:
                 validator.validate(arguments)
             except ValidationError:
                 return reject("invalid_schema_arguments")
+            # Egress can exfiltrate via ARGUMENTS, before any output guard.
+            # This detects known exact strings, not unknown/encoded secrets.
+            if (spec.risk is Risk.EGRESS and
+                    _contains_protected(arguments, self.protected_values)):
+                return reject("sensitive_argument_blocked")
             resource = arguments.get(spec.resource_field)
             if not isinstance(resource, str) or resource not in policy.allowed_resources:
                 return reject("resource_not_allowed")

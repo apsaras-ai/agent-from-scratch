@@ -288,6 +288,48 @@ class SecurityMonitorTests(unittest.TestCase):
                 self.assertEqual(obs.error, "endpoint_not_allowed")
         self.assertFalse(self.ledger)
 
+    def test_egress_protected_arguments_blocked_before_handler(self):
+        # Even a valid approval should not export registered protected strings.
+        request = self.propose(
+            "egress-secret", "egress.send",
+            endpoint=self.allowed_endpoint,
+            message="contains FAKE_SECRET_ABCDEF123456",
+        )
+        ticket = self.approve(request)
+        response = self.monitor.execute(request, self.policy, approval=ticket)
+        self.assertEqual(response.error, "sensitive_argument_blocked")
+        self.assertEqual(self.ledger, [])
+        self.assertEqual(self.monitor.accepted_calls(self.principal), 0)
+        self.assertNotIn("FAKE_SECRET_ABCDEF123456", response.model_text())
+
+    def test_egress_decoded_json_escape_checked_before_handler(self):
+        # Decode JSON escapes before scanning the outgoing value.
+        raw = (
+            '{"resource":"workspace:alpha",'
+            '"endpoint":"https://partner.example/api/submit",'
+            '"message":"\\u0046AKE_SECRET_ABCDEF123456"}'
+        )
+        proposal = ActionProposal("escaped-egress", "egress.send", raw)
+        self.assertEqual(
+            self.monitor.execute(proposal, self.policy).error,
+            "sensitive_argument_blocked",
+        )
+        self.assertEqual(self.ledger, [])
+
+    def test_tool_schema_rejects_remote_ref(self):
+        schema = {
+            "type": "object",
+            "properties": {
+                "resource": {"$ref": "https://example.invalid/remote-schema"},
+            },
+            "required": ["resource"], "additionalProperties": False,
+        }
+        with self.assertRaisesRegex(SecurityError, "external_schema_reference"):
+            self.monitor.register(ToolSpec(
+                "remote.schema", Risk.READ, schema, "resource",
+                lambda _p, _a: "unreachable",
+            ))
+
     def test_output_secret_guard_blocks_known_value(self):
         req = self.propose("secret-1", "secret.report")
         obs = self.monitor.execute(req, self.policy)
