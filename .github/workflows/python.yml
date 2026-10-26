@@ -40,6 +40,7 @@ jobs:
       - run: python examples/ch24_platform_lab.py
       - run: python examples/ch25_eval_lab.py
       - run: python examples/ch26_benchmark_lab.py
+      - run: python examples/ch27_evaluation_framework_lab.py
 
   browser:
     name: Chromium integration (3.12)
