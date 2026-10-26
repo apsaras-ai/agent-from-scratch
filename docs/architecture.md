@@ -212,3 +212,26 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 未实现与后续内容
 
 本章**不提供**多机 Worker IAM、真实 Container/VM/KVM 隔离、真实外部副作用 Exactly-Once、自动 Heartbeat/Reaper 后台服务、数据库 HA、跨 Region 调度或生产公平性 SLA。`HostCapacity` 与 `SandboxAllocation` 复用第 18 章资源模型；第 19 章的安全策略需要部署在 Worker 外的可信 Tool Proxy。第 21–23 章将扩展可靠恢复、Tracing、性能与费用账本。
+
+## 第 21 章：Agent Reliability 与故障恢复（教学版）
+
+- [Transactionally persisted Outbox](../src/mini_agent/reliability_outbox.py)：`Intent`、`OutboxStore`、`DispatchLease`、`BackendEvidence`，将业务意图和 Outbox 消息作为一个 SQLite 事务提交。
+- [Circuit Breaker / Jitter / Saga](../src/mini_agent/resilience_patterns.py)：`RetryPolicy`、`CircuitBreaker`、`SagaStep`、`CompensationPlan`。
+- [Synthetic External Provider](../src/mini_agent/reliability_fixture.py)：有独立内存账本的合成 Provider，用于真实执行代码层故障注入，模拟幂等键、提交回执、结果查询与未知状态，不访问外部服务。
+- [故障注入实验](../examples/ch21_reliability_lab.py)：本地事务内崩溃全回滚、外部提交后丢 ACK、失联后 Reaper+Reconciliation、幂等重复投递、Circuit Breaker 和补偿建议。
+- [36 项回归测试](../tests/test_ch21.py)：事务/重启/争抢 Claim、旧 Lease Fencing、Known/Unknown Outcome、Host Reaping、Provider Dedup、Cancel、Retry Budget、Breaker/Saga。
+- [生产上线审查清单](ch21_reliability_review.md)：External Side Effect Contract、Provider Oracle、Consumer Inbox、Lease、Crash Recovery、Reconciliation、Saga、运行指标。
+
+### 核心不变量与安全边界
+
+1. Business Intent 和 Outbox 行在**同一 SQLite 事务**中创建；事务中途异常同时回滚；不能自动泛化为跨服务事务。
+2. Outbox 允许重复投递；真正外部业务幂等由 Provider/Consumer 承诺并验证。Non-Idempotent 效果未知时不能直接再次执行。
+3. `claim` 使用 SQLite 事务和随机 Lease Token、Generation；旧 Worker ACK 必须 Fenced。
+4. Worker 崩溃、异常或 Lease 过期后先进入 `reap_required`，保留容量，直到受信任 Host 确认执行环境已经销毁。
+5. `reconcile` 只依据 Host-owned `BackendOracle.inspect`；真正 Provider 若不能权威断言 Not Applied，应返回 Unknown，而不是将最终一致性的 Not Found 视为未提交。
+6. Circuit Breaker 与 Retry/Jitter 保护依赖负载，但没有授权含义；Saga 只输出补偿计划，实际执行应产生**新的**安全批准 Operation/Outbox。
+7. SQLite Writer、Synthetic Provider 和 HMAC/审批身份等示例不构成跨机 Exactly-Once、真实 IAM、真实 OS 隔离或生产可信 External Receipt 体系。
+
+### 与第 20 章的关系
+
+第 20 章 `SQLiteTaskScheduler` 负责 Job/Attempt/Lease/Resource Scheduling；第 21 章 `OutboxStore` 负责业务意图及外部副作用投递。二者当前是**独立教学模型**，不能跨两个 SQLite 文件组成一个真正原子事务。生产需设计统一的 Task/Activity/Operation ID、统一 Event History、Outbox/Inbox、外部幂等与 Host 审计。第 22 章将进一步实现 Tracing、错误根因分析和成本/运行时计量。
