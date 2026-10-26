@@ -301,9 +301,9 @@ class CanaryPolicy:
         if (not _positive_int(self.min_attempts) or
                 not _positive_int(self.min_seconds)):
             raise DeploymentError("invalid_minimum_evidence")
-        if (type(self.min_attempts_rate) not in (int, float)
-                or not math.isfinite(self.min_attempts_rate)
-                or not 0 < self.min_attempts_rate <= 1):
+        if (type(self.min_verified_rate) not in (int, float)
+                or not math.isfinite(self.min_verified_rate)
+                or not 0 < self.min_verified_rate <= 1):
             raise DeploymentError("invalid_success_rate_policy")
         if (type(self.max_latency_ratio) not in (int, float)
                 or not math.isfinite(self.max_latency_ratio)
@@ -375,7 +375,7 @@ def judge_canary(
         return RolloutJudgment("pause", "insufficient_observation", weight, weight)
     if not baseline.verified:
         return RolloutJudgment("pause", "missing_verified_baseline", weight, weight)
-    if candidate.verified / candidate.attempted < policy.min_attempts_rate:
+    if candidate.verified / candidate.attempted < policy.min_verified_rate:
         return RolloutJudgment("abort", "verified_success_regression", weight, 0)
     if baseline.p95_latency_ms == 0:
         return RolloutJudgment("pause", "missing_latency_baseline", weight, weight)
