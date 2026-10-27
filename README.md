@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–27 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 28–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–28 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 29–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -258,6 +258,19 @@ python -m unittest discover -s tests -p 'test_ch27.py' -v
 ```
 
 **边界**：Campaign `approve` 是评测决策，不是生产 Release 执行回执；没有身份服务、真实联网工具、部署操作或 OS Sandbox。真实 Benchmark 要把可信 Grader 与不可信 Agent Worker 隔离，并通过认证的发布控制面消费结果。
+
+## 第 28 章：Evaluation-Driven Development
+
+[完整教材](book/chapters/28.md) · [EDD Decision Gate](src/mini_agent/evaluation_driven_development.py) · [离线实验](examples/ch28_edd_lab.py) · [12 项测试](tests/test_ch28.py)
+
+以评测驱动持续优化：归因失败、登记可证伪的改进假设、进行固定 Benchmark 的 Baseline/Candidate/Ablation 对照，并在 Outcome、Tool Policy、成本和回归门槛满足时建议 `adopt`；条件不足返回 `inconclusive`，退化时 `reject`。安全结果来自可信环境而非模型自报，离线建议不直接部署生产环境。
+
+```bash
+python examples/ch28_edd_lab.py
+python -m unittest discover -s tests -p 'test_ch28.py' -v
+```
+
+**边界**：全部基于六条合成公开任务和 Fake Model，不具备真实模型统计显著性、真正的在线 A/B 或外部 Sandbox 授权。
 
 ## 项目结构
 

@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–27 章已有正文初稿、参考文献、实验和单元测试；第 28–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–28 章已有正文初稿、参考文献、实验和单元测试；第 29–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -44,7 +44,7 @@
 - [第 25 章：Agent Evaluation 基础](chapters/25.md) · ✅ Outcome/Policy Graders、版本化 Dataset、AgentKernel 集成、pass@k/pass^k 和统计实验
 - [第 26 章：Agent Benchmark 体系](chapters/26.md) · ✅ 版本化多领域 Benchmark、结果复现、回归与安全 Gate
 - [第 27 章：从零实现 Agent Evaluation Framework](chapters/27.md) · ✅ SQLite Campaign、逐 Trial Checkpoint/恢复、配对回归、静态 Dashboard 和测试
-- [第 28 章：Evaluation-Driven Development](chapters/28.md)
+- [第 28 章：Evaluation-Driven Development](chapters/28.md) · ✅ 失败归因、预注册优化假设、A/B + 消融、质量/安全/成本回归 Gate
 
 ## 第六篇：高级推理、Agentic RL 与自我改进
 
@@ -108,3 +108,5 @@
 - 第 26 章：[离线 Benchmark 实验](../examples/ch26_benchmark_lab.py) · [Benchmark Framework](../src/mini_agent/benchmark_framework.py) · [15 项单元测试](../tests/test_ch26.py) · [生产审查](../docs/ch26_benchmark_review.md)
 
 - 第 27 章：[Evaluation Campaign 实验](../examples/ch27_evaluation_framework_lab.py) · [CampaignStore/Dashboard](../src/mini_agent/eval_campaign.py) · [14 项测试](../tests/test_ch27.py)
+
+- 第 28 章：[EDD Hypothesis/Ablation 实验](../examples/ch28_edd_lab.py) · [EDD Decision Gate](../src/mini_agent/evaluation_driven_development.py) · [12 项回归测试](../tests/test_ch28.py)

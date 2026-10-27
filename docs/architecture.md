@@ -329,3 +329,12 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 - `CandidateConfig` 区分每个候选的 Model/Prompt/Sampling 版本，不将其混入双方共享的业务评测条件；旧 `BenchmarkProtocol.model_version/prompt_version` 保留为教学默认值。
 - `TrialContext` 派生每 Case/Trial 稳定 Seed，仅在 Runner 支持 `run_with_context` 时传递；不能替代真实 Provider 确定性保证。
 - `CampaignStore` 对每条可信 Trial Result 立即持久化，用 `suite_digest` 约束 Resume，使用 SQLite 唯一键和 Revision 防止冲突/重放。Pending 外部副作用不由这个离线缓存解决。
+
+
+## 第 28 章：Evaluation-Driven Development
+
+- [`evaluation_driven_development.py`](../src/mini_agent/evaluation_driven_development.py)：预注册 `ChangeHypothesis`、安全 Failure Triage、`decide_edd`、Ablation、Cost Ratio、多目标硬约束、人工审查的 Regression Proposal。
+- [`ch28_edd_lab.py`](../examples/ch28_edd_lab.py)：复用第 25–26 章的版本化数据与 Fake AgentKernel 运行三组对照，输出候选决策、改进与消融结果。
+- [`test_ch28.py`](../tests/test_ch28.py)：12 项单测涵盖配置/协议冲突、越权、成本缺失、质量回归、Ablation 不充分及真实任务匿名化边界。
+
+这些测试只证明离线决策状态机的可复现规则，不能证明真实 Agent 的 Prompt 改进具有因果关系。`adopt` 不自动写生产代码、放量或更改 Tool 权限；线上发布仍需第 24 章可信 Release Control Plane。
