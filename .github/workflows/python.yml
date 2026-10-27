@@ -45,6 +45,7 @@ jobs:
       - run: python examples/ch29_search_lab.py
       - run: python examples/ch30_feedback_lab.py
       - run: python examples/ch31_agentic_rl_lab.py
+      - run: python examples/ch32_self_improvement_lab.py
 
   browser:
     name: Chromium integration (3.12)
