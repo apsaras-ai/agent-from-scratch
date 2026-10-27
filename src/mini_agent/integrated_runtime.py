@@ -12,6 +12,7 @@ provider token accounting. No data, prompt, tool args, or output is persisted.
 """
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -172,10 +173,18 @@ class SQLiteRunJournal:
                 )
             """)
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
         con = sqlite3.connect(self.path, timeout=5)
         con.row_factory = sqlite3.Row
-        return con
+        try:
+            yield con
+            con.commit()
+        except BaseException:
+            con.rollback()
+            raise
+        finally:
+            con.close()
 
     @staticmethod
     def _from_row(row: sqlite3.Row) -> RunReceipt:
