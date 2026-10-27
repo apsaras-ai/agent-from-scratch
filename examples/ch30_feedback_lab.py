@@ -8,7 +8,7 @@ from pathlib import Path
 from mini_agent.feedback_learning import (
     TrustedArithmeticVerifier, audit_reward_model, biased_length_reward,
     collect_train_feedback, compare_proxy_and_host,
-    evaluate_one_step_policy, fit_tabular_feedback_policy,
+    evaluate_heldout_policy, fit_tabular_feedback_policy,
     load_feedback_suite,
 )
 from mini_agent.inference_search import SynthesisTask
@@ -56,8 +56,8 @@ def main() -> None:
     heldout = suite.for_split("heldout")
     records = collect_train_feedback(suite)
     policy = fit_tabular_feedback_policy(suite, records)
-    baseline = evaluate_one_step_policy(heldout)
-    learned = evaluate_one_step_policy(heldout, policy=policy)
+    baseline = evaluate_heldout_policy(suite)
+    learned = evaluate_heldout_policy(suite, policy=policy)
     print("  Dataset:", suite.suite_id, suite.version,
           "train tasks", len(train), "heldout tasks", len(heldout))
     print("  Trusted training labels:", len(records))

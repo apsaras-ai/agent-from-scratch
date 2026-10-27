@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–29 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 30–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–30 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 31–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -284,6 +284,19 @@ python -m unittest discover -s tests -p 'test_ch29.py' -v
 ```
 
 **教学边界**：ToyProposer 不是训练过的 LLM，不生成或获取模型隐藏 Chain-of-Thought；搜出的程序只作用于受控整数状态。Synthetic Cost 只是人工设置的计算单价，不能用于真实模型价格/能力排名。真实 Coding/Browser/Search 需要隔离 Sandbox、独立工具权限、实际 Provider Usage 与外部业务副作用核对。
+
+## 第 30 章：Verifier 与 Feedback Learning
+
+[完整教材](book/chapters/30.md) · [Verifier / Feedback Learner 源码](src/mini_agent/feedback_learning.py) · [12 条合成数据](evals/ch30_feedback_suite.json) · [离线实验](examples/ch30_feedback_lab.py) · [38 项单元测试](tests/test_ch30.py) · [安全与研究审查清单](docs/ch30_feedback_review.md)
+
+本章系统区分 **Process Verification 与 Outcome Verification**、确定性 Tool/Policy 与预测性 Reward Model。它通过故意偏置的“路径越长分越高”奖励揭示 Reward Hacking，并实现 TP/FP/TN/FN、Brier、ECE 校准；随后从 Train Split 生成经 Host 独立验证的反馈，用 Beta(1,1) 平滑训练一个**表格式算术动作策略**，在新 Initial State 的 Heldout Task 上评估效果。
+
+```bash
+python examples/ch30_feedback_lab.py
+python -m unittest discover -s tests -p 'test_ch30.py' -v
+```
+
+**关键边界**：Toy Verifier 和 Tabular Feedback Policy 都只处理纯合成算术任务；训练集 6 条、Heldout 6 条，不能由其结果推断真实 LLM 推理/Agent 安全能力。没有 Transformer 权重、GPU、RL、生产 OS Sandbox、真实业务 Tool 和线上部署。`source` 文本标签不提供真实反馈来源认证，正式使用仍需 IAM、可信外部回执与独立 Eval。
 
 ## 项目结构
 

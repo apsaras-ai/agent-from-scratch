@@ -359,3 +359,25 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 ### 与后续的衔接
 
 第 30 章将讨论 Outcome/Process Verifier、Feedback Learning 与 Reward 可靠性；第 31 章进入 Agentic RL；第 32 章研究 Self-Improvement。真实 Search 数据若被用于训练/自改进，必须先经过第 25–28 章的独立评测、数据权限、泄漏检查和因果审查。
+
+
+## 第 30 章：Outcome/Process Verifier 与 Feedback Learning（离线教学版）
+
+- [`feedback_learning.py`](../src/mini_agent/feedback_learning.py)：`TrustedArithmeticVerifier` 重放真实合成状态并给出 `first_error_step/step_labels/outcome_ok`；`RewardAudit` 对有偏奖励计算混淆矩阵、Brier/ECE；`FeedbackSuite`、`FeedbackRecord`、`collect_train_feedback` 与 `fit_tabular_feedback_policy` 为训练反馈增加版本和独立结果核对。
+- [`ch30_feedback_suite.json`](../evals/ch30_feedback_suite.json)：12 条公开合成单步任务，Train/Heldout 各 6 条、Task ID 和具体 State/Target 组合不同。
+- [`ch30_feedback_lab.py`](../examples/ch30_feedback_lab.py)：不可信的长度 Proxy Reward 偏向错误长路径；Host 独立 Outcome Verifier 找到真实正确的短路径；随后只用 6 条 Train Task 的完整 24 个验证标签进行表格式反馈学习。
+- [`test_ch30.py`](../tests/test_ch30.py)：38 项测试，覆盖结果伪造、首次错误步骤、非法工具、概率 NaN/负值、Reward Calibration、跨 Split 数据污染、标签/路径哈希篡改、训练样本完整覆盖和 Heldout Policy Digest。
+- [`ch30_feedback_review.md`](ch30_feedback_review.md)：反馈来源、真实 Provider Outcome、Reward Hacking、训练数据治理、校准、安全与生产升级清单。
+
+### 核心不变量和研究边界
+
+1. Verifier 完全重放受信任的算术 DSL 执行结果；模型自报的 `claimed_final` 不能改变实际终态。过程合法与最终达标是独立字段。
+2. Reward Model 预测高分**不是业务真值**，长而错误的路径可以得到更高的 Proxy Score；此时独立 Host Verifier 仍应拒绝。
+3. 仅有可信 Host 重新检查过的 Train Label 可供学习；Heldout Task、旧 Suite Digest、标签翻转、路径摘要篡改和训练动作覆盖不完整时拒绝拟合。
+4. 反馈学习器只计算 `(target-initial, allowed_op)` 的经验 Beta 平滑成功率，不训练 LLM 权重，不执行 RL/梯度更新。
+5. 真实生产应将 Agent Proposal、Tool Runtime、Independent Verifier、External Effect Ledger、训练样本与 Release Gate 划分为不同受信任身份；同进程 Python 和文本 `source` 标记都不是生产安全边界。
+6. 实验只有 6 个公开 Heldout Toy Case，数值改善是教学预期，不构成显著统计结果或真实模型质量证明。
+
+### 下一步
+
+第 31 章将真正引入 Agentic RL 的 Trajectory、Return、Policy Gradient、Advantage 和可控策略参数更新；第 32 章再讨论长期自改进闭环和防止自我评测失真。

@@ -17,6 +17,7 @@ from mini_agent.feedback_learning import (
     TabularFeedbackPolicy, TrustedArithmeticVerifier, _probability,
     audit_reward_model, biased_length_reward, collect_train_feedback,
     compare_proxy_and_host, evaluate_one_step_policy,
+    evaluate_heldout_policy,
     fit_tabular_feedback_policy, load_feedback_suite,
 )
 
@@ -303,7 +304,19 @@ class LearningTests(unittest.TestCase):
         action=model.choose(task)
         r=TrustedArithmeticVerifier().verify(task,(action,))
         self.assertIn(action,task.allowed_ops)
-        self.assertEqual(r.outcome_ok,action=="sub1" and False)
+        self.assertFalse(r.outcome_ok)
+
+    def test_incomplete_training_feedback_rejected(self):
+        with self.assertRaises(FeedbackError):
+            fit_tabular_feedback_policy(self.suite,self.records[:-1])
+
+    def test_heldout_evaluation_requires_matching_suite_digest(self):
+        learned=fit_tabular_feedback_policy(self.suite,self.records)
+        self.assertEqual(evaluate_heldout_policy(
+            self.suite,policy=learned).verified,6)
+        changed=replace(self.suite,version="v2")
+        with self.assertRaises(FeedbackError):
+            evaluate_heldout_policy(changed,policy=learned)
 
     def test_training_and_heldout_task_id_disjoint(self):
         self.assertFalse({

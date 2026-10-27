@@ -398,6 +398,14 @@ def fit_tabular_feedback_policy(
         row = counts[(task.target - task.initial, item.action)]
         row[0] += int(item.label)
         row[1] += 1
+    # This teaching dataset enumerates every permitted action for each TRAIN
+    # state. Selective positive-only feedback would bias the estimates.
+    expected = {
+        (task.task_id, op)
+        for task in train.values() for op in task.allowed_ops
+    }
+    if seen != expected:
+        raise FeedbackError("incomplete_training_action_coverage")
     encoded = tuple(sorted(
         (delta, op, wins, total)
         for (delta, op), (wins, total) in counts.items()
@@ -434,3 +442,20 @@ def evaluate_one_step_policy(
         verified += int(evidence.outcome_ok)
         illegal += int(not evidence.process_ok)
     return PolicyEvaluation(len(tasks), verified, illegal)
+
+def evaluate_heldout_policy(
+    suite: FeedbackSuite, *,
+    policy: TabularFeedbackPolicy | None = None,
+    verifier: TrustedArithmeticVerifier | None = None,
+) -> PolicyEvaluation:
+    """Use only new Case IDs and a policy fitted to this exact suite."""
+    if not isinstance(suite, FeedbackSuite):
+        raise FeedbackError("feedback_suite_required")
+    if policy is not None and (
+        not isinstance(policy, TabularFeedbackPolicy)
+        or policy.suite_digest != suite.digest()
+    ):
+        raise FeedbackError("heldout_policy_dataset_mismatch")
+    return evaluate_one_step_policy(
+        suite.for_split("heldout"), policy=policy, verifier=verifier
+    )
