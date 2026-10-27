@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–32 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 33–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–33 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -323,6 +323,19 @@ python -m unittest discover -s tests -p 'test_ch32.py' -v
 ~~~
 
 **边界**：默认 Agent 是可信的确定性 Python 策略；只优化固定允许的配置枚举，**不使用 LLM、不训练模型、不执行不可信代码或真实 Tool Side Effects，也不部署生产**。合成 Audit 数据在公开仓库中，并非真正的保密 Benchmark；in-memory Receipt、approved flag 和 CAS 不是生产 IAM/交易保障。单次小样本 Dev/Audit 成功仅说明该 Toy 任务内的行为变化，不能推断真实 Agent 泛化或自主递归进化。
+
+## 第 33 章：构建完整的 Mini-Agent Runtime
+
+[完整正文](book/chapters/33.md) · [集成 Runtime 源码](src/mini_agent/integrated_runtime.py) · [SQLite/Tracing/Memory/Verifier 端到端实验](examples/ch33_runtime_lab.py) · [测试](tests/test_ch33.py) · [安全、Durability、部署审查清单](docs/ch33_runtime_review.md)
+
+本章真正复用并运行 **Ch04 AgentKernel → Ch06 ModelGateway → Ch08 ContextManagedModel → Ch09 Scoped Memory → Ch04 Tool Registry → Ch22 Privacy-first Tracing**，在外面补上 Host-owned 独立 Outcome 验收和 **SQLite 事务性 Run Status Journal**。它在模型与工具执行前持久化 Running，执行结束后通过 Revision CAS 写入 Verified/Rejected/Halted 等状态；新的 SQLite Connection 可以重新读取运行状态，重复 Run ID 被拒绝，模拟崩溃结果必须人工核对，**不自动重试**。所有 Tool 和 Memory 仅使用可信的合成只读 Fixture。
+
+~~~bash
+python examples/ch33_runtime_lab.py
+python -m unittest discover -s tests -p 'test_ch33.py' -v
+~~~
+
+**边界**：默认 Model 是确定性离线 Fixture，不代表 LLM 推理能力；当前仍为可信单进程同步 Python，**没有**生产 IAM、HTTP API、真正的 OS/MicroVM Sandbox、分布式 Worker、Activity-level Durable Replay、外部业务副作用或 Exactly-Once。SQLite 只存安全状态元数据（不存 Prompt/Tool Args/Result），不是可以自动恢复任意 Tool Activity 的 Event History；Provider Usage/Cost 未观察到就保持 Unknown。
 
 ## 项目结构
 
