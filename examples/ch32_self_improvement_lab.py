@@ -28,7 +28,8 @@ def main() -> None:
             f"cost={record.dev_cost:.3f} "
             f"gate={record.decision.reason}"
         )
-    print(f"\\n  Winner DEV: {search.winner_dev_passes}/6")
+    print()
+    print(f"  Winner DEV: {search.winner_dev_passes}/6")
     print(f"  Proposals evaluated: {search.candidate_evaluations}")
     print("  Candidate cannot access audit cases during search.")
     print("  Active configuration before audit:", session.registry.active.digest()[:12])
