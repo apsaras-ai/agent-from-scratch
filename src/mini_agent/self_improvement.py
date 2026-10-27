@@ -128,9 +128,9 @@ class AgentConfig:
     def __post_init__(self) -> None:
         if (self.prompt not in _PROMPTS or self.workflow not in _WORKFLOWS
                 or type(self.memory_rules) is not tuple
-                or len(set(self.memory_rules)) != len(self.memory_rules)
                 or any(type(r) is not str or r not in _RULES
                        for r in self.memory_rules)
+                or len(set(self.memory_rules)) != len(self.memory_rules)
                 or len(self.memory_rules) > len(_RULES)):
             raise ImprovementError("invalid_config")
 
@@ -447,6 +447,10 @@ class LocalConfigRegistry:
         expected_revision: int, approved_by_trusted_caller: bool,
         expected_receipt: AuditReceipt,
     ) -> RegistryEvent:
+        if (not isinstance(config, AgentConfig)
+                or not isinstance(receipt, AuditReceipt)
+                or not isinstance(expected_receipt, AuditReceipt)):
+            raise ImprovementError("invalid_release_evidence")
         if (approved_by_trusted_caller is not True
                 or type(expected_revision) is not int
                 or expected_revision != self.revision):
