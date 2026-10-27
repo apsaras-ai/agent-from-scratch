@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–30 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 31–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–31 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 32–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -297,6 +297,19 @@ python -m unittest discover -s tests -p 'test_ch30.py' -v
 ```
 
 **关键边界**：Toy Verifier 和 Tabular Feedback Policy 都只处理纯合成算术任务；训练集 6 条、Heldout 6 条，不能由其结果推断真实 LLM 推理/Agent 安全能力。没有 Transformer 权重、GPU、RL、生产 OS Sandbox、真实业务 Tool 和线上部署。`source` 文本标签不提供真实反馈来源认证，正式使用仍需 IAM、可信外部回执与独立 Eval。
+
+## 第 31 章：Agentic Reinforcement Learning
+
+[完整教材](book/chapters/31.md) · [策略梯度 / PPO / GRPO 教学源码](src/mini_agent/agentic_rl.py) · [独立 Host Verifier + 离线实验](examples/ch31_agentic_rl_lab.py) · [契约及数值回归测试](tests/test_ch31.py) · [可信训练/上线审查清单](docs/ch31_rl_review.md)
+
+本章承接第 29 章 Inference-Time Search 和第 30 章 Feedback Learning：在**可信、可重放的多轮算术工具环境**中，真正采样轨迹、从独立 Host Verifier 收集终局回报，并更新随机表格式 Softmax 策略；从零对照 REINFORCE、PPO-style Clipped Policy Gradient 和 GRPO-style Group Advantages，单独处理零方差、正/负优势裁剪及可选的精确类别分布 KL。
+
+~~~bash
+python examples/ch31_agentic_rl_lab.py
+python -m unittest discover -s tests -p 'test_ch31.py' -v
+~~~
+
+**关键边界**：这是离线**表格式 Agent Policy** 的真实参数训练，**不是** Transformer/LLM Fine-tuning、完整 PPO/GRPO、真实浏览器/代码工具的 RL、OS Sandbox 或模型能力排名。固定任务的精确成功概率、不同随机种子的成功次数不能推断未知 Goal 泛化；训练与发布必须继续遵守独立评测和 Host 授权。
 
 ## 项目结构
 
