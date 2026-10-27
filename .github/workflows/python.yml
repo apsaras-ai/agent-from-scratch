@@ -43,6 +43,7 @@ jobs:
       - run: python examples/ch27_evaluation_framework_lab.py
       - run: python examples/ch28_edd_lab.py
       - run: python examples/ch29_search_lab.py
+      - run: python examples/ch30_feedback_lab.py
 
   browser:
     name: Chromium integration (3.12)
