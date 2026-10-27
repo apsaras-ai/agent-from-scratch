@@ -21,10 +21,10 @@ import re
 import sqlite3
 from typing import Any, Iterator
 
-from .agent_evaluation import EvalError, compare_paired
+from .agent_evaluation import EvalError, TrialResult, compare_paired
 from .benchmark_framework import (
     BenchmarkResult, BenchmarkProtocol, RegressionGate,
-    run_benchmark, gate_candidate,
+    run_benchmark, gate_candidate, CandidateConfig,
 )
 
 _ID = re.compile(r"^[a-z][a-z0-9_.-]{0,79}$")
@@ -41,17 +41,23 @@ class CampaignSpec:
     protocol: BenchmarkProtocol
     baseline_id: str
     candidate_id: str
+    baseline_config: CandidateConfig | None = None
+    candidate_config: CandidateConfig | None = None
 
     def __post_init__(self):
         if (not isinstance(self.protocol, BenchmarkProtocol)
                 or any(not isinstance(v, str) or not _ID.fullmatch(v)
                        for v in (self.campaign_id,self.baseline_id,self.candidate_id))
-                or self.baseline_id == self.candidate_id):
+                or self.baseline_id == self.candidate_id
+                or (self.baseline_config is not None and not isinstance(self.baseline_config,CandidateConfig))
+                or (self.candidate_config is not None and not isinstance(self.candidate_config,CandidateConfig))):
             raise EvalError("invalid_campaign_spec")
 
     def digest(self) -> str:
         return sha256(_json((self.campaign_id,self.protocol.digest(),
-                             self.baseline_id,self.candidate_id)).encode()).hexdigest()
+                             self.baseline_id,self.candidate_id,
+                             self.baseline_config.digest() if self.baseline_config else None,
+                             self.candidate_config.digest() if self.candidate_config else None)).encode()).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -85,6 +91,7 @@ class CampaignStore:
             CREATE TABLE IF NOT EXISTS campaigns(
                 campaign_id TEXT PRIMARY KEY,
                 spec_digest TEXT NOT NULL,
+                suite_digest TEXT,
                 revision INTEGER NOT NULL,
                 status TEXT NOT NULL,
                 reason TEXT NOT NULL,
@@ -94,6 +101,16 @@ class CampaignStore:
                 candidate_summary TEXT,
                 paired_improvements INTEGER,
                 paired_regressions INTEGER
+            );
+            CREATE TABLE IF NOT EXISTS campaign_trials(
+                campaign_id TEXT NOT NULL, candidate_id TEXT NOT NULL,
+                case_id TEXT NOT NULL, trial_index INTEGER NOT NULL,
+                passed INTEGER NOT NULL, outcome_ok INTEGER NOT NULL,
+                policy_ok INTEGER NOT NULL, advisory_score REAL,
+                failure_code TEXT NOT NULL, model_calls INTEGER NOT NULL,
+                tool_calls INTEGER NOT NULL, latency_ms REAL,
+                cost_usd TEXT,
+                PRIMARY KEY(campaign_id,candidate_id,case_id,trial_index)
             );
             CREATE TABLE IF NOT EXISTS campaign_events(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -134,7 +151,7 @@ class CampaignStore:
                     raise EvalError("campaign_id_reused_for_other_protocol")
             else:
                 db.execute(
-                    "INSERT INTO campaigns VALUES(?, ?, 0, 'created', 'initialized',"
+                    "INSERT INTO campaigns VALUES(?, ?, NULL, 0, 'created', 'initialized',"
                     " NULL,NULL,NULL,NULL,NULL,NULL)",
                     (spec.campaign_id,spec.digest()))
                 db.execute(
@@ -170,6 +187,78 @@ class CampaignStore:
                 "WHERE campaign_id=? ORDER BY id",(campaign_id,)).fetchall()
         return tuple(tuple(row) for row in rows)
 
+    def trial_rows(self,campaign_id:str)->tuple[tuple[Any,...],...]:
+        with self._db() as db:
+            rows=db.execute(
+                "SELECT candidate_id,case_id,trial_index,passed,policy_ok,"
+                "failure_code,model_calls,tool_calls,latency_ms,cost_usd "
+                "FROM campaign_trials WHERE campaign_id=? "
+                "ORDER BY candidate_id,case_id,trial_index",(campaign_id,)).fetchall()
+        return tuple(tuple(row) for row in rows)
+
+    def _cached_trials(self,campaign_id:str,candidate_id:str,suite,protocol):
+        cases={c.case_id:c for c in suite.cases_for(protocol.split)}
+        with self._db() as db:
+            campaign=db.execute("SELECT suite_digest FROM campaigns WHERE campaign_id=?",
+                                (campaign_id,)).fetchone()
+            if campaign is not None and campaign["suite_digest"] not in (None,suite.digest()):
+                raise EvalError("checkpoint_dataset_digest_mismatch")
+            records=db.execute(
+                "SELECT * FROM campaign_trials WHERE campaign_id=? AND candidate_id=?",
+                (campaign_id,candidate_id)).fetchall()
+        result={}
+        for row in records:
+            case=cases.get(row["case_id"])
+            if case is None or not 0<=row["trial_index"]<protocol.trials_per_case:
+                raise EvalError("invalid_persisted_trial_key")
+            key=(case.case_id,row["trial_index"])
+            if key in result:
+                raise EvalError("duplicate_persisted_trial")
+            result[key]=TrialResult(
+                case.case_id,case.category,case.split,row["trial_index"],
+                bool(row["outcome_ok"]),bool(row["policy_ok"]),bool(row["passed"]),
+                row["failure_code"],row["tool_calls"],row["model_calls"],
+                row["latency_ms"],Decimal(row["cost_usd"])
+                if row["cost_usd"] is not None else None,row["advisory_score"])
+        return result
+
+    def _checkpoint(self,spec:CampaignSpec,candidate_id:str,trial:TrialResult,
+                    expected_revision:int,suite_digest:str):
+        """Persist one verified trial; repeated identical checkpoints are idempotent."""
+        with self._tx() as db:
+            campaign=db.execute(
+                "SELECT spec_digest,suite_digest,revision,status FROM campaigns WHERE campaign_id=?",
+                (spec.campaign_id,)).fetchone()
+            if (campaign is None or campaign["spec_digest"]!=spec.digest()
+                    or campaign["revision"]!=expected_revision
+                    or campaign["status"]!="created"):
+                raise EvalError("stale_campaign_checkpoint")
+            if campaign["suite_digest"] not in (None,suite_digest):
+                raise EvalError("checkpoint_dataset_digest_mismatch")
+            if campaign["suite_digest"] is None:
+                db.execute("UPDATE campaigns SET suite_digest=? WHERE campaign_id=?",
+                           (suite_digest,spec.campaign_id))
+            values=(spec.campaign_id,candidate_id,trial.case_id,trial.trial_index,
+                    int(trial.passed),int(trial.outcome_ok),int(trial.policy_ok),
+                    trial.advisory_score,trial.failure_code,trial.model_calls,
+                    trial.tool_calls,trial.latency_ms,
+                    str(trial.cost_usd) if trial.cost_usd is not None else None)
+            existing=db.execute(
+                "SELECT * FROM campaign_trials WHERE campaign_id=? AND "
+                "candidate_id=? AND case_id=? AND trial_index=?",
+                values[:4]).fetchone()
+            if existing is not None:
+                check=tuple(existing[k] for k in (
+                    "campaign_id","candidate_id","case_id","trial_index","passed",
+                    "outcome_ok","policy_ok","advisory_score","failure_code",
+                    "model_calls","tool_calls","latency_ms","cost_usd"))
+                if check!=values:
+                    raise EvalError("conflicting_trial_checkpoint")
+            else:
+                db.execute(
+                    "INSERT INTO campaign_trials VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    values)
+
     def evaluate(
         self, spec:CampaignSpec, suite, baseline_runner, candidate_runner,
         *, gate:RegressionGate, expected_revision:int=0,
@@ -182,8 +271,25 @@ class CampaignStore:
         """
         if not isinstance(spec,CampaignSpec) or not isinstance(gate,RegressionGate):
             raise EvalError("invalid_evaluation_inputs")
-        a=run_benchmark(suite,spec.protocol,spec.baseline_id,baseline_runner)
-        b=run_benchmark(suite,spec.protocol,spec.candidate_id,candidate_runner)
+        # Recheck identity BEFORE running user-controlled evaluation adapters.
+        snapshot=self.load(spec.campaign_id)
+        if (snapshot.digest!=spec.digest() or snapshot.revision!=expected_revision
+                or snapshot.status!="created"):
+            raise EvalError("stale_or_mismatched_campaign")
+        a=run_benchmark(
+            suite,spec.protocol,spec.baseline_id,baseline_runner,
+            candidate_config=spec.baseline_config,
+            cached_trials=self._cached_trials(
+                spec.campaign_id,spec.baseline_id,suite,spec.protocol),
+            on_trial=lambda trial:self._checkpoint(
+                spec,spec.baseline_id,trial,expected_revision,suite.digest()))
+        b=run_benchmark(
+            suite,spec.protocol,spec.candidate_id,candidate_runner,
+            candidate_config=spec.candidate_config,
+            cached_trials=self._cached_trials(
+                spec.campaign_id,spec.candidate_id,suite,spec.protocol),
+            on_trial=lambda trial:self._checkpoint(
+                spec,spec.candidate_id,trial,expected_revision,suite.digest()))
         # In addition to protocol, require identical per-trial key coverage.
         pairs=compare_paired(a.report,b.report)
         decision=gate_candidate(a,b,gate)
@@ -194,7 +300,7 @@ class CampaignStore:
         with self._tx() as db:
             row=db.execute("SELECT * FROM campaigns WHERE campaign_id=?",
                            (spec.campaign_id,)).fetchone()
-            if row is None or row["spec_digest"]!=spec.digest():
+            if row is None or row["spec_digest"]!=spec.digest() or row["suite_digest"]!=suite.digest():
                 raise EvalError("unknown_or_mismatched_campaign")
             if type(expected_revision) is not int or row["revision"]!=expected_revision:
                 raise EvalError("stale_campaign_revision")

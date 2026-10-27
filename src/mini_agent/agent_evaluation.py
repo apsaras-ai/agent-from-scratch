@@ -381,7 +381,9 @@ class EvalHarness:
         self.suite,self.max_actions,self.advisory=suite,max_actions,advisory
 
     def evaluate(self,candidate:str,runner:EvalRunner, *,split:str,
-                 trials_per_case:int=1) -> EvalReport:
+                 trials_per_case:int=1,
+                 trial_context_factory=None,
+                 cached_trials=None, on_trial=None) -> EvalReport:
         if not _id(candidate) or not callable(getattr(runner,"run",None)):
             raise EvalError("invalid_candidate_runner")
         if type(trials_per_case) is not int or not 1 <= trials_per_case <= 100:
@@ -392,11 +394,24 @@ class EvalHarness:
             public=PublicTask(case.case_id,case.category,case.instruction,
                               case.allowed_writes)
             for trial_index in range(trials_per_case):
+                cached = (cached_trials or {}).get((case.case_id,trial_index))
+                if cached is not None:
+                    if (not isinstance(cached,TrialResult) or
+                            cached.case_id!=case.case_id or
+                            cached.trial_index!=trial_index or
+                            cached.category!=case.category or cached.split!=case.split):
+                        raise EvalError("invalid_cached_trial")
+                    records.append(cached)
+                    continue
                 env=FixtureEnvironment(case,max_actions=self.max_actions)
                 telemetry=None
                 error="none"
                 try:
-                    response=runner.run(public,env,trial_index)
+                    if trial_context_factory is not None and hasattr(runner,"run_with_context"):
+                        context=trial_context_factory(case.case_id,trial_index)
+                        response=runner.run_with_context(public,env,context)
+                    else:
+                        response=runner.run(public,env,trial_index)
                     if not isinstance(response,RunTelemetry):
                         raise EvalError("invalid_runner_telemetry")
                     telemetry=response
@@ -419,14 +434,17 @@ class EvalHarness:
                             advisory_score=assessment.score
                     except Exception:
                         pass
-                records.append(TrialResult(
+                trial_result = TrialResult(
                     case.case_id,case.category,case.split,trial_index,
                     state_matches,policy_ok,passed,failure,len(events),
                     telemetry.model_calls if telemetry else 0,
                     telemetry.latency_ms if telemetry else None,
                     telemetry.total_cost() if telemetry else None,
                     advisory_score,
-                ))
+                )
+                if on_trial is not None:
+                    on_trial(trial_result)
+                records.append(trial_result)
         return EvalReport(candidate,self.suite.suite_id,self.suite.version,
                           self.suite.digest(),split,trials_per_case,tuple(records))
 

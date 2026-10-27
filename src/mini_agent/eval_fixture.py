@@ -63,6 +63,11 @@ class KernelFixtureRunner:
             raise ValueError("unknown_fixture_variant")
         self.variant = variant
 
+    def run_with_context(self,task:PublicTask,env:FixtureEnvironment,context):
+        # This deterministic toy model has no RNG; context is still delivered.
+        self.last_trial_context=context
+        return self.run(task,env,context.trial_index)
+
     def run(self, task:PublicTask, env:FixtureEnvironment,
             trial_index:int) -> RunTelemetry:
         registry = ToolRegistry()

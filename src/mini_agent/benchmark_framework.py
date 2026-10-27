@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from hashlib import sha256
 import json
+import math
 from typing import Mapping
 
 from .agent_evaluation import (
@@ -62,6 +63,38 @@ class BenchmarkProtocol:
 
 
 @dataclass(frozen=True)
+class CandidateConfig:
+    """Candidate-owned model/prompt identity, distinct from shared eval conditions."""
+    model_version: str
+    prompt_version: str
+    sampling_version: str = "deterministic"
+
+    def __post_init__(self):
+        if any(not isinstance(v,str) or not v or len(v)>128
+               for v in (self.model_version,self.prompt_version,self.sampling_version)):
+            raise EvalError("invalid_candidate_config")
+
+    def digest(self) -> str:
+        return sha256(json.dumps(self.__dict__,sort_keys=True).encode()).hexdigest()
+
+
+@dataclass(frozen=True)
+class TrialContext:
+    """Deterministic seed delivered to opt-in, trusted runner adapters."""
+    case_id: str
+    trial_index: int
+    seed: int
+    candidate_config: CandidateConfig
+
+
+def trial_seed(protocol: BenchmarkProtocol, case_id: str, index: int) -> int:
+    if type(index) is not int or index < 0:
+        raise EvalError("invalid_trial_index")
+    value = json.dumps((protocol.seed,case_id,index),separators=(",",":"))
+    return int.from_bytes(sha256(value.encode()).digest()[:8],"big")
+
+
+@dataclass(frozen=True)
 class DomainScore:
     domain: str
     trials: int
@@ -82,6 +115,7 @@ class BenchmarkResult:
     report: EvalReport
     domains: tuple[DomainScore, ...]
     failure_counts: tuple[tuple[str, int], ...]
+    candidate_config_digest: str = ""
 
     @property
     def score(self) -> float:
@@ -96,6 +130,7 @@ class BenchmarkResult:
             "suite_version": self.report.suite_version,
             "suite_digest": self.report.suite_digest,
             "protocol_digest": self.protocol_digest,
+            "candidate_config_digest": self.candidate_config_digest,
             "split": self.protocol.split,
             "trials": len(self.report.trials),
             "successes": self.report.successes,
@@ -120,13 +155,23 @@ def run_benchmark(
     protocol: BenchmarkProtocol,
     candidate: str,
     runner: EvalRunner,
+    *, candidate_config: CandidateConfig | None = None,
+    cached_trials=None, on_trial=None,
 ) -> BenchmarkResult:
     if suite.suite_id != protocol.benchmark_id or suite.version != protocol.benchmark_version:
         raise EvalError("benchmark_suite_version_mismatch")
+    if candidate_config is None:
+        # Legacy experiments: these shared fields act as default config only.
+        candidate_config = CandidateConfig(protocol.model_version,protocol.prompt_version)
+    if not isinstance(candidate_config,CandidateConfig):
+        raise EvalError("invalid_candidate_config")
     harness = EvalHarness(suite)
     report = harness.evaluate(
         candidate, runner, split=protocol.split,
         trials_per_case=protocol.trials_per_case,
+        cached_trials=cached_trials, on_trial=on_trial,
+        trial_context_factory=lambda case_id,index: TrialContext(
+            case_id,index,trial_seed(protocol,case_id,index),candidate_config),
     )
     domains = []
     counts: dict[str, int] = {}
@@ -146,7 +191,8 @@ def run_benchmark(
     if not domains:
         raise EvalError("empty_benchmark")
     return BenchmarkResult(protocol, protocol.digest(), report,
-                           tuple(domains), tuple(sorted(counts.items())))
+                           tuple(domains), tuple(sorted(counts.items())),
+                           candidate_config.digest())
 
 
 @dataclass(frozen=True)
@@ -159,7 +205,9 @@ class RegressionGate:
     def __post_init__(self) -> None:
         if type(self.max_allowed_regressions) is not int or self.max_allowed_regressions < 0:
             raise EvalError("invalid_regression_limit")
-        if not isinstance(self.minimum_micro_rate, (int, float)) or not 0 <= self.minimum_micro_rate <= 1:
+        if (type(self.minimum_micro_rate) not in (int,float)
+                or not math.isfinite(self.minimum_micro_rate)
+                or not 0 <= self.minimum_micro_rate <= 1):
             raise EvalError("invalid_minimum_rate")
         if type(self.require_cost_observed) is not bool:
             raise EvalError("invalid_cost_requirement")
