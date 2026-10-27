@@ -4,7 +4,7 @@
 
 一本面向软件工程师与研究生的中文 Agent 开发教程：不从框架 API 入手，而是从决策模型、Agent Loop、工具协议与状态机出发，逐步实现 Coding Agent、生产级 Agent Runtime、评测系统和自我改进机制。
 
-> 📘 **状态：正式写作中。** 第 1–28 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 29–34 章目前为写作骨架。未完成的章节不代表已出版内容。
+> 📘 **状态：正式写作中。** 第 1–29 章已形成正文初稿与配套 Python 实验，仍待技术审稿；第 30–34 章目前为写作骨架。未完成的章节不代表已出版内容。
 
 ## 本书特色
 
@@ -271,6 +271,19 @@ python -m unittest discover -s tests -p 'test_ch28.py' -v
 ```
 
 **边界**：全部基于六条合成公开任务和 Fake Model，不具备真实模型统计显著性、真正的在线 A/B 或外部 Sandbox 授权。
+
+## 第 29 章：Inference-Time Scaling 与搜索算法
+
+[完整教材](book/chapters/29.md) · [Best-of-N / Self-Consistency / Beam / MCTS Runtime](src/mini_agent/inference_search.py) · [离线实验](examples/ch29_search_lab.py) · [26 项单元测试](tests/test_ch29.py) · [搜索安全/上线检查表](docs/ch29_search_review.md)
+
+本章从状态空间与动作预算出发，使用完全**离线且可验证的算术程序合成任务**比较四种推理期搜索策略，并将不可信 Proposal、受信任环境执行和独立 Host Verifier 分开。每个任务分别限制 Proposal、Tool/State Transition、Verifier 和 Candidate 次数；错误或非法动作无法绕过可信 Tool Allowlist，也会计入尝试成本。
+
+```bash
+python examples/ch29_search_lab.py
+python -m unittest discover -s tests -p 'test_ch29.py' -v
+```
+
+**教学边界**：ToyProposer 不是训练过的 LLM，不生成或获取模型隐藏 Chain-of-Thought；搜出的程序只作用于受控整数状态。Synthetic Cost 只是人工设置的计算单价，不能用于真实模型价格/能力排名。真实 Coding/Browser/Search 需要隔离 Sandbox、独立工具权限、实际 Provider Usage 与外部业务副作用核对。
 
 ## 项目结构
 

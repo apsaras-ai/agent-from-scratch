@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–28 章已有正文初稿、参考文献、实验和单元测试；第 29–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–29 章已有正文初稿、参考文献、实验和单元测试；第 30–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -48,7 +48,7 @@
 
 ## 第六篇：高级推理、Agentic RL 与自我改进
 
-- [第 29 章：Inference-Time Scaling 与搜索算法](chapters/29.md)
+- [第 29 章：Inference-Time Scaling 与搜索算法](chapters/29.md) · ✅ Best-of-N、Self-Consistency、Beam Search、MCTS/UCT、硬预算和独立验证器
 - [第 30 章：Verifier 与 Feedback Learning](chapters/30.md)
 - [第 31 章：Agentic Reinforcement Learning](chapters/31.md)
 - [第 32 章：Self-Improving Agent](chapters/32.md)
@@ -110,3 +110,5 @@
 - 第 27 章：[Evaluation Campaign 实验](../examples/ch27_evaluation_framework_lab.py) · [CampaignStore/Dashboard](../src/mini_agent/eval_campaign.py) · [14 项测试](../tests/test_ch27.py)
 
 - 第 28 章：[EDD Hypothesis/Ablation 实验](../examples/ch28_edd_lab.py) · [EDD Decision Gate](../src/mini_agent/evaluation_driven_development.py) · [12 项回归测试](../tests/test_ch28.py)
+
+- 第 29 章：[四种搜索算法离线实验](../examples/ch29_search_lab.py) · [Search Runtime 源码](../src/mini_agent/inference_search.py) · [26 项单元测试](../tests/test_ch29.py) · [生产化审查清单](../docs/ch29_search_review.md)

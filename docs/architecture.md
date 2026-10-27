@@ -338,3 +338,24 @@ Worker 的真实操作系统沙箱、远程通信协议（A2A）、动态委派�
 - [`test_ch28.py`](../tests/test_ch28.py)：12 项单测涵盖配置/协议冲突、越权、成本缺失、质量回归、Ablation 不充分及真实任务匿名化边界。
 
 这些测试只证明离线决策状态机的可复现规则，不能证明真实 Agent 的 Prompt 改进具有因果关系。`adopt` 不自动写生产代码、放量或更改 Tool 权限；线上发布仍需第 24 章可信 Release Control Plane。
+
+
+## 第 29 章：Inference-Time Scaling 与可信搜索
+
+- [`inference_search.py`](../src/mini_agent/inference_search.py)：`SynthesisTask`、`SearchBudget`、`SearchResult`、`ToyProposer`、Best-of-N、Self-Consistency、Beam Search、MCTS/UCT、稳定 Seed 和独立 Host Verifier。
+- [`ch29_search_lab.py`](../examples/ch29_search_lab.py)：同一合成任务集和硬预算上限下比较四种搜索方法的 Success、Proposal/Verifier Calls、Synthetic Cost，**不执行真实模型或外部 Tool**。
+- [`test_ch29.py`](../tests/test_ch29.py)：26 项单测覆盖伪造终态拒绝、非法动作/工具越权阻止、预算上限、成本计入、错误多数投票、UCT/Beam/采样路径、确定性 Replay。
+- [`ch29_search_review.md`](ch29_search_review.md)：真实 Agent Search 的隔离、权限、不可逆副作用、Cost Budget、Verifier 和 Benchmark 验收条目。
+
+### 关键不变量
+
+1. 提案 Policy 无工具写权限，只能提交固定的四类 Toy Arithmetic Operator；可信 Host 决定哪些 State Transition 合法。
+2. 成功只来自独立 Host Verifier 从初始状态重新执行整个候选路径，而不是模型自报 `success=true` 或近似评分函数。
+3. Proposal、Transition、Verifier、Candidate Count 均分别限额；拒绝非法动作仍要计入 Proposal 花费。
+4. Best-of-N 用二元真实验收器在 N 次候选中提前停止；Self-Consistency 是最终答案的投票，再检查获胜结果；Beam 利用距离启发式，MCTS 用 UCT/二元回报控制探索。
+5. 同样的硬预算**不意味着相同实际计算量**，不同策略的早停与 Verifier 使用模式可能不同。
+6. 环境和模型都是合成教学程序，计算单价不是实际账单；此实现不具备真实 LLM 内部推理、跨机 Tree Search、Agent 权限沙箱或生产 Exactly-Once Side Effects。
+
+### 与后续的衔接
+
+第 30 章将讨论 Outcome/Process Verifier、Feedback Learning 与 Reward 可靠性；第 31 章进入 Agentic RL；第 32 章研究 Self-Improvement。真实 Search 数据若被用于训练/自改进，必须先经过第 25–28 章的独立评测、数据权限、泄漏检查和因果审查。
