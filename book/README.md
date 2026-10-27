@@ -43,7 +43,7 @@
 
 - [第 25 章：Agent Evaluation 基础](chapters/25.md) · ✅ Outcome/Policy Graders、版本化 Dataset、AgentKernel 集成、pass@k/pass^k 和统计实验
 - [第 26 章：Agent Benchmark 体系](chapters/26.md) · ✅ 版本化多领域 Benchmark、结果复现、回归与安全 Gate
-- [第 27 章：从零实现 Agent Evaluation Framework](chapters/27.md) · ✅ SQLite Campaign、配对回归、静态 Dashboard 和 14 项测试
+- [第 27 章：从零实现 Agent Evaluation Framework](chapters/27.md) · ✅ SQLite Campaign、逐 Trial Checkpoint/恢复、配对回归、静态 Dashboard 和测试
 - [第 28 章：Evaluation-Driven Development](chapters/28.md)
 
 ## 第六篇：高级推理、Agentic RL 与自我改进

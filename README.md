@@ -286,3 +286,7 @@ tests/                # 标准库 unittest
 本仓库公开供阅读与交流。**公开仓库并不自动授予使用、修改或再分发许可**。教材版权与代码许可证尚未选定；发布正式许可文件前请勿假定项目已采用 MIT 或 Apache-2.0 许可。
 
 课程资料与论文归原作者所有。这里提供原创讲解、实验和引用索引，不镜像转载课程视频或论文全文。
+
+### 第 25–27 章校准
+
+共享评测协议与候选专属 `CandidateConfig` 已拆分，支持对比不同模型/Prompt；`TrialContext` 提供可复现的任务/试验 Seed，兼容不支持 Seed 的旧 Runner；`CampaignStore` 现支持 Trial 级 SQLite Checkpoint、断点续跑及数据集指纹校验。参阅 [第 26 章](book/chapters/26.md)、[第 27 章](book/chapters/27.md) 和 [校准回归测试](tests/test_ch25_27_calibration.py)。

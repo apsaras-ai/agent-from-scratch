@@ -98,9 +98,9 @@ class CalibrationTests(unittest.TestCase):
             finished=restarted.evaluate(spec,self.suite,base,candidate,
                                        gate=RegressionGate(minimum_micro_rate=.8))
             self.assertEqual(finished.status,"approve")
-            self.assertEqual(base.calls,2)
-            self.assertEqual(candidate.calls,3)
-            self.assertEqual(len(restarted.trial_rows(spec.campaign_id)),6)
+            self.assertEqual(base.calls,5)
+            self.assertEqual(candidate.calls,6)
+            self.assertEqual(len(restarted.trial_rows(spec.campaign_id)),12)
             self.assertEqual(finished.baseline_rate,.5)
 
     def test_checkpoint_dataset_change_is_rejected(self):
