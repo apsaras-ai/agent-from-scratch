@@ -143,6 +143,28 @@ class IntegrationTests(unittest.TestCase):
         self.assertIn("UNTRUSTED DATA", original_task)
         self.assertNotIn(b"ALICE_UNTRUSTED_MEMORY", self.path.read_bytes())
 
+    def test_irrelevant_same_owner_memory_not_in_exact_key_context(self):
+        memory = MemoryService()
+        now = datetime.now(timezone.utc)
+        memory.write(MemoryRecord(
+            "alpha_only_note", "tenant_a", "alice", "semantic", "alpha",
+            "ALPHA_ONLY_CONTEXT", "synthetic",
+            now - timedelta(minutes=1),
+        ), Access("tenant_a", "alice"))
+        backend = FixtureBackend("alpha")
+        beta_catalog = TrustedFactCatalog({
+            ("tenant_a", "alice", "beta"): "BETA_TRUTH",
+        })
+        beta_req = LookupRequest("tenant_a", "alice", "run_beta", "beta")
+        output = MiniAgentRuntime(
+            beta_catalog, self.journal, memory=memory,
+            backend_factory=lambda _: backend,
+        ).run(beta_req)
+        self.assertTrue(output.receipt.verified)
+        self.assertEqual(output.receipt.memory_hits, 0)
+        self.assertNotIn("ALPHA_ONLY_CONTEXT",
+                         backend.seen_messages[0][1]["content"])
+
     def test_expired_memory_not_retrieved(self):
         memory = MemoryService()
         now = datetime.now(timezone.utc)
