@@ -347,10 +347,17 @@ class MiniAgentRuntime:
 
     def _memory_context(self, request: LookupRequest) -> tuple[str, int]:
         # Scope before ranking: Chapter 9's MemoryService enforces tenant/owner.
-        hits = self.memory.retrieve(
+        retrieved = self.memory.retrieve(
             request.fact_key, actor=Access(request.tenant_id, request.owner_id),
-            now=datetime.now(timezone.utc), top_k=self.config.memory_top_k,
+            now=datetime.now(timezone.utc),
+            top_k=max(8, self.config.memory_top_k),
         )
+        # This toy query is an EXACT fact-key lookup, not an open-ended search.
+        # Retrieved same-owner memories about OTHER keys are not relevant.
+        hits = [
+            item for item in retrieved
+            if item.record.key == request.fact_key
+        ][:self.config.memory_top_k]
         safe_evidence = []
         for row in grounded_context(hits):
             safe_evidence.append({
