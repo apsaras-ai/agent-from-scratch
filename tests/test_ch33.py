@@ -151,7 +151,7 @@ class IntegrationTests(unittest.TestCase):
             "ALPHA_ONLY_CONTEXT", "synthetic",
             now - timedelta(minutes=1),
         ), Access("tenant_a", "alice"))
-        backend = FixtureBackend("alpha")
+        backend = FixtureBackend("beta")
         beta_catalog = TrustedFactCatalog({
             ("tenant_a", "alice", "beta"): "BETA_TRUTH",
         })
