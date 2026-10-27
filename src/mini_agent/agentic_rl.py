@@ -26,7 +26,7 @@ def _integer(value: object, lo: int, hi: int) -> bool:
 
 
 def _real(value: object, lo: float, hi: float) -> bool:
-    return type(value) in (float, int) and isfinite(value) and lo <= value <= hi
+    return type(value) in (float, int) and lo <= value <= hi and isfinite(value)
 
 
 @dataclass(frozen=True)
@@ -127,9 +127,10 @@ class TabularPolicy:
         return TabularPolicy({obs: dict(x) for obs, x in self.logits.items()})
 
     def probabilities(self, task: ArithmeticTask, obs: Observation) -> dict[str, float]:
+        if type(obs) is not tuple or len(obs) != 3:
+            raise RLContractError("invalid_observation")
         state, target, remaining = obs
-        if (type(obs) is not tuple or len(obs) != 3 or target != task.target
-                or not _integer(remaining, 1, task.horizon)):
+        if target != task.target or not _integer(remaining, 1, task.horizon):
             raise RLContractError("invalid_observation")
         choices = legal_actions(task, state)
         if not choices:
@@ -304,12 +305,12 @@ def train_round(
                 for a, probability in current.items():
                     row[a] += coefficient * (float(a == action) - probability) / count
 
+                ref = reference.probabilities(task, obs)
+                if set(ref) != set(current):
+                    raise RLContractError("reference_action_mask_mismatch")
+                kl = sum(p * log(p / ref[a]) for a, p in current.items())
+                epoch_kl += kl / count
                 if config.kl_beta:
-                    ref = reference.probabilities(task, obs)
-                    if set(ref) != set(current):
-                        raise RLContractError("reference_action_mask_mismatch")
-                    kl = sum(p * log(p / ref[a]) for a, p in current.items())
-                    epoch_kl += kl / count
                     for a, p in current.items():
                         # Exact gradient of KL(pi_new || pi_ref) w.r.t. categorical logits.
                         row[a] -= config.kl_beta * p * (log(p / ref[a]) - kl) / count
