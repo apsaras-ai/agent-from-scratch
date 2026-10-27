@@ -1,6 +1,6 @@
 # 教材目录
 
-> **进度**：第 1–31 章已有正文初稿、参考文献、实验和单元测试；第 32–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
+> **进度**：第 1–32 章已有正文初稿、参考文献、实验和单元测试；第 33–34 章仍为写作骨架。每章将逐步加入原理、实现、实验、练习和参考资料。
 
 
 ## 第一篇：Agent 基础原理与系统模型
@@ -115,3 +115,4 @@
 
 - 第 30 章：[反馈学习实验](../examples/ch30_feedback_lab.py) · [Feedback Verifier/Policy](../src/mini_agent/feedback_learning.py) · [12 条合成数据](../evals/ch30_feedback_suite.json) · [38 项单元测试](../tests/test_ch30.py) · [反馈安全审查](../docs/ch30_feedback_review.md)
 - 第 31 章：[Agentic RL 离线实验](../examples/ch31_agentic_rl_lab.py) · [策略梯度 / PPO / GRPO 源码](../src/mini_agent/agentic_rl.py) · [强化学习回归测试](../tests/test_ch31.py) · [研究与上线审查清单](../docs/ch31_rl_review.md)
+- 第 32 章：[Self-Improvement 离线实验](../examples/ch32_self_improvement_lab.py) · [Prompt/Memory/Workflow 优化源码](../src/mini_agent/self_improvement.py) · [质量/成本/安全/回滚测试](../tests/test_ch32.py) · [上线与数据隔离审查清单](../docs/ch32_self_improvement_review.md)
