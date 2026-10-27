@@ -59,6 +59,19 @@ class FixtureAndHostTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(ImprovementError):
                 AgentConfig(**changed)
 
+    def test_unhashable_memory_rule_fails_closed(self):
+        with self.assertRaises(ImprovementError):
+            AgentConfig(memory_rules=([],))
+
+    def test_release_evidence_type_validation(self):
+        registry = LocalConfigRegistry(AgentConfig())
+        with self.assertRaises(ImprovementError):
+            registry.activate(
+                AgentConfig(), "forged-receipt", expected_revision=0,
+                approved_by_trusted_caller=True,
+                expected_receipt="forged-receipt",
+            )
+
     def test_host_rejects_unknown_tools_and_budget_overruns(self):
         host = _TrustedHost(self.dev[0], max_calls=1)
         with self.assertRaises(ImprovementError):
